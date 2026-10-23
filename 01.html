@@ -1,0 +1,2293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pediatric Nursing Comprehensive Exam Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    #particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    .shake {
+      animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-2px, 0, 0); }
+      20%, 80% { transform: translate3d(4px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+      40%, 60% { transform: translate3d(6px, 0, 0); }
+    }
+    .pulse-glow {
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen relative overflow-x-hidden selection:bg-teal-500 selection:text-white">
+  <canvas id="particle-canvas"></canvas>
+
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-teal-500 to-emerald-400 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-teal-500/20">
+          <i class="fa-solid fa-baby-carriage"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+            Pediatric Nursing Quiz Hub
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-400 border border-teal-500/30">6 Lectures • 180+ MCQs</span>
+          </h1>
+          <p class="text-xs text-slate-400">Aligned with Wong's Nursing Care & Midterm Curricula</p>
+        </div>
+      </div>
+
+      <!-- Action Panel & Stats -->
+      <div class="flex items-center gap-3">
+        <div class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 flex items-center gap-4">
+          <div class="text-center">
+            <span class="text-[10px] uppercase text-slate-400 font-bold block">Score</span>
+            <span id="score-display" class="text-sm font-extrabold text-teal-400">0</span>
+          </div>
+          <div class="h-6 w-px bg-slate-800"></div>
+          <div class="text-center">
+            <span class="text-[10px] uppercase text-slate-400 font-bold block">Answered</span>
+            <span id="progress-display" class="text-sm font-extrabold text-slate-200">0/0</span>
+          </div>
+          <div class="h-6 w-px bg-slate-800"></div>
+          <div class="text-center">
+            <span class="text-[10px] uppercase text-slate-400 font-bold block">Accuracy</span>
+            <span id="accuracy-display" class="text-sm font-extrabold text-amber-400">0%</span>
+          </div>
+        </div>
+
+        <button id="shuffle-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow shadow-indigo-600/30">
+          <i class="fa-solid fa-shuffle"></i>
+          <span>Shuffle All</span>
+        </button>
+
+        <button id="reset-btn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg text-xs font-semibold transition">
+          <i class="fa-solid fa-rotate-left"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Filters -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div class="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none w-full md:w-auto" id="filter-tabs">
+        <!-- Rendered by JS -->
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <label for="search-input" class="sr-only">Search</label>
+        <div class="relative">
+          <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input type="text" id="search-input" placeholder="Search concepts, topics..." class="bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 transition w-56">
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Filter Banner -->
+    <div class="bg-gradient-to-r from-teal-950/40 via-slate-900 to-indigo-950/40 border border-teal-800/40 rounded-2xl p-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <h2 id="current-lecture-title" class="text-base font-bold text-white flex items-center gap-2">
+          <span>All Lectures Overview</span>
+        </h2>
+        <p id="current-lecture-desc" class="text-xs text-slate-400 mt-0.5">30+ targeted practice questions per unit with instant feedback</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="visible-count-badge" class="text-xs font-semibold bg-teal-500/10 text-teal-300 border border-teal-500/20 px-3 py-1 rounded-full">
+          Showing 180 Questions
+        </span>
+      </div>
+    </div>
+
+    <!-- Questions Container -->
+    <div id="questions-container" class="space-y-4">
+      <!-- Dynamic Question Cards -->
+    </div>
+  </main>
+
+  <script>
+    // Particle fireworks and sparkle engine
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = Math.random() * 6 + 2;
+        this.dx = Math.cos(angle) * velocity;
+        this.dy = Math.sin(angle) * velocity;
+        this.alpha = 1;
+        this.decay = Math.random() * 0.02 + 0.015;
+        this.size = Math.random() * 3.5 + 1.5;
+        this.gravity = 0.12;
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      update() {
+        this.x += this.dx;
+        this.y += this.dy;
+        this.dy += this.gravity;
+        this.alpha -= this.decay;
+        this.size = Math.max(0, this.size - 0.04);
+      }
+    }
+
+    function spawnBurst(x, y, isWin = false) {
+      const colors = isWin 
+        ? ['#10b981', '#34d399', '#38bdf8', '#fbbf24', '#f43f5e', '#a855f7']
+        : ['#2dd4bf', '#38bdf8', '#fbbf24', '#ffffff'];
+      const count = isWin ? 65 : 40;
+      for (let i = 0; i < count; i++) {
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        particles.push(new Particle(x, y, color));
+      }
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update();
+        particles[i].draw();
+        if (particles[i].alpha <= 0) {
+          particles.splice(i, 1);
+        }
+      }
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // Comprehensive Questions Database covering all 6 lectures
+    const LECTURES = [
+      { id: "all", name: "All Lectures", count: 180 },
+      { id: 1, name: "L1: Philosophy of Care", count: 30 },
+      { id: 2, name: "L2: Child Hospitalization", count: 30 },
+      { id: 3, name: "L3: Problems of Newborn", count: 30 },
+      { id: 4, name: "L4: Infant Feeding & Weaning", count: 30 },
+      { id: 5, name: "L5: High-Risk Neonates", count: 30 },
+      { id: 6, name: "L6: Resp & Cardiac Disorders", count: 30 }
+    ];
+
+    const RAW_QUESTIONS = [
+      // ================= LECTURE 1: PHILOSOPHY OF CARE & PEDIATRIC NURSE =================
+      {
+        lecture: 1,
+        question: "Which core philosophy recognizes the family as the constant in a child's life while support personnel fluctuate?",
+        options: [
+          { text: "Family-Centered Care", isCorrect: true, rationale: "Family-Centered Care specifically acknowledges the family as the enduring constant in a child's life, with healthcare providers acting in mutual partnership." },
+          { text: "Atraumatic Care", isCorrect: false, rationale: "Atraumatic care concentrates on minimizing physical and psychological distress." },
+          { text: "Primary Medical Model", isCorrect: false, rationale: "The traditional medical model focuses primarily on disease pathology rather than the family dynamic." },
+          { text: "Authoritative Healthcare", isCorrect: false, rationale: "This denotes a restrictive hierarchy rather than a partnership." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "What is the primary objective of 'Atraumatic Care' in pediatric health settings?",
+        options: [
+          { text: "Eliminate or minimize physical and psychological distress", isCorrect: true, rationale: "Atraumatic care utilizes therapeutic personnel and interventions to prevent or minimize distress for children and their families." },
+          { text: "Accelerate patient discharge within 24 hours", isCorrect: false, rationale: "Safe discharge timing depends on clinical stability, not solely atraumatic principles." },
+          { text: "Strictly restrict parental intervention during procedures", isCorrect: false, rationale: "Parental presence is actively encouraged in atraumatic nursing." },
+          { text: "Substitute non-pharmacologic methods for all medications", isCorrect: false, rationale: "Analgesics and appropriate pharmacotherapy are central components of atraumatic care." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "In family-centered care, how should clinical and diagnostic information be shared with the family?",
+        options: [
+          { text: "Exchanged completely and in an unbiased, supportive manner", isCorrect: true, rationale: "Key elements dictate open, complete, and unbiased communication at all times between professionals and families." },
+          { text: "Filtered through attending physician discretion only", isCorrect: false, rationale: "Hiding or delaying information damages the collaborative trust foundation." },
+          { text: "Provided exclusively at the time of patient discharge", isCorrect: false, rationale: "Communication must occur continuously across all phases of care." },
+          { text: "Shared only when parents directly request medical records", isCorrect: false, rationale: "Information sharing should be proactive and routine." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "Which definition best captures the essence of 'Cultural Humility' in pediatric clinical practice?",
+        options: [
+          { text: "A continuous process of self-reflection to know oneself to know others", isCorrect: true, rationale: "Cultural humility emphasizes self-reflection, openness, and lifelong learning rather than assuming complete competence." },
+          { text: "Mastering all customs of every ethnic subpopulation", isCorrect: false, rationale: "This describes the unattainable concept of absolute cultural mastery." },
+          { text: "Requiring families to assimilate to hospital guidelines", isCorrect: false, rationale: "Assimilation disregards the family's individual cultural values." },
+          { text: "Documenting race and religion on initial admission forms", isCorrect: false, rationale: "Simple demographic documentation does not constitute cultural humility." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "How does a pediatric nurse maintain appropriate professional boundaries in a therapeutic relationship?",
+        options: [
+          { text: "Separates personal needs while maintaining empathetic care", isCorrect: true, rationale: "Therapeutic boundaries establish clear limits that empower the family's control over health decisions." },
+          { text: "Adopts full parental decision-making authority", isCorrect: false, rationale: "Nurses empower the family rather than overriding their authority." },
+          { text: "Avoids personal interactions beyond medical administration", isCorrect: false, rationale: "Empathy and therapeutic bonding are critical to pediatric well-being." },
+          { text: "Shares personal home contact information for off-duty calls", isCorrect: false, rationale: "Sharing private contact details violates professional clinical boundaries." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "When acting as a 'Family Advocate', what is the pediatric nurse's essential duty?",
+        options: [
+          { text: "Assists the family to make informed choices in the child's best interest", isCorrect: true, rationale: "Advocacy ensures families understand options, services, and procedures to act in the child's optimal interest." },
+          { text: "Makes all final clinical decisions when parents express anxiety", isCorrect: false, rationale: "Advocates guide and inform parents without stripping them of choice." },
+          { text: "Discourages questions regarding alternative medical options", isCorrect: false, rationale: "Advocacy promotes informed inquiries into all viable treatment alternatives." },
+          { text: "Replaces the physician during formal consent discussions", isCorrect: false, rationale: "Obtaining operative consent remains the primary duty of the proceduralist." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "What is considered the cornerstone approach to pediatric disease prevention and health promotion?",
+        options: [
+          { text: "Health education and anticipatory guidance", isCorrect: true, rationale: "Anticipatory guidance prepares parents for upcoming developmental stages and prevents avoidable injuries." },
+          { text: "Prescription of broad-spectrum antibiotics prophylactically", isCorrect: false, rationale: "Indiscriminate antibiotic use leads to antimicrobial resistance." },
+          { text: "Routine hospitalization for annual check-ups", isCorrect: false, rationale: "Preventative checks occur in outpatient and well-baby settings." },
+          { text: "Restricting physical activities during early childhood", isCorrect: false, rationale: "Physical activity is essential for healthy musculoskeletal growth." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "Which action should a nurse take when a family experiences symptoms of spiritual distress?",
+        options: [
+          { text: "Contact the healthcare institution's chaplaincy department", isCorrect: true, rationale: "Connecting families with spiritual care services respects their religious and coping framework." },
+          { text: "Encourage the family to rely purely on scientific reasoning", isCorrect: false, rationale: "Dismissing spiritual concerns disregards holistic pediatric principles." },
+          { text: "Debate the medical validity of requested spiritual rituals", isCorrect: false, rationale: "Nurses should listen for understanding rather than agreement or debate." },
+          { text: "Discharge the patient to home spiritual care early", isCorrect: false, rationale: "Discharge must depend on physical stability, not spiritual distress." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "Why is an interdisciplinary approach vital when coordinating holistic pediatric care?",
+        options: [
+          { text: "Recognizes individual scope limitations and optimizes specialist synergy", isCorrect: true, rationale: "Failing to acknowledge professional boundaries and limitations can be nontherapeutic or hazardous." },
+          { text: "Eliminates the necessity for routine physician rounding", isCorrect: false, rationale: "Physicians remain an integral part of the interdisciplinary team." },
+          { text: "Allows any team member to prescribe scheduled pharmaceuticals", isCorrect: false, rationale: "Prescription rights remain defined by legal licensure." },
+          { text: "Minimizes the duration of clinical nursing documentation", isCorrect: false, rationale: "Interdisciplinary care requires thorough and collaborative documentation." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "When counseling a family under acute crisis, the primary purpose of active listening is:",
+        options: [
+          { text: "Listening for understanding rather than agreement or judgment", isCorrect: true, rationale: "Understanding the family's worldview and stress state facilitates joint problem-solving." },
+          { text: "Formulating quick arguments to contradict parental hesitation", isCorrect: false, rationale: "Argumentation fosters defensive barriers and distrust." },
+          { text: "Confirming whether the family's beliefs are medically justified", isCorrect: false, rationale: "Listening aims at empathetic comprehension rather than validation trials." },
+          { text: "Limiting family dialogue to less than 2 minutes per encounter", isCorrect: false, rationale: "Arbitrary time constraints hinder therapeutic counseling." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "What does anticipatory guidance in safety counseling primarily depend on?",
+        options: [
+          { text: "The developmental age and specific stage of the child", isCorrect: true, rationale: "Risks for an infant (e.g., choking, falls) differ drastically from those facing school-age children or adolescents." },
+          { text: "Strictly the financial resources of the family", isCorrect: false, rationale: "Developmental vulnerability determines safety hazards irrespective of wealth." },
+          { text: "The numerical birth order within the sibling hierarchy", isCorrect: false, rationale: "Developmental status remains the primary determinant of injury risk." },
+          { text: "The physical layout of the hospital treatment room", isCorrect: false, rationale: "Guidance addresses home and daily living safety risks." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "Which of the following is NOT an element of family-centered care?",
+        options: [
+          { text: "Mandating that healthcare professionals dictate all home schedules", isCorrect: true, rationale: "Family-centered care honors family autonomy, strengths, and individual coping rather than rigid clinician control." },
+          { text: "Encouraging family-to-family networking and support groups", isCorrect: false, rationale: "Family-to-family support is a documented key element of FCC." },
+          { text: "Honoring cultural, spiritual, and socio-economic diversity", isCorrect: false, rationale: "Cultural diversity is deeply respected in FCC." },
+          { text: "Facilitating collaboration at all levels of hospital policy", isCorrect: false, rationale: "Collaboration in program development and policy is fundamental to FCC." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "In pediatric ethical decision-making, which criteria should the nurse incorporate?",
+        options: [
+          { text: "Professional standards, societal mores, laws, and the family's values", isCorrect: true, rationale: "Ethical resolution requires balancing legal statutes, professional standards, and the family's belief systems." },
+          { text: "Exclusively the personal religious beliefs of the primary nurse", isCorrect: false, rationale: "Imposing personal dogma violates professional pediatric ethics." },
+          { text: "Institutional financial profit considerations exclusively", isCorrect: false, rationale: "Financial incentives cannot override patient safety and beneficence." },
+          { text: "Disregarding parental input in minor elective procedures", isCorrect: false, rationale: "Parental consent and assent are integral ethical requirements." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "Which factor determines the unique roles played by individuals within a family unit?",
+        options: [
+          { text: "Culturally and socially defined structures and interactions", isCorrect: true, rationale: "Family roles reflect cultural patterns, internal traditions, and social expectations." },
+          { text: "Strictly physical strength and body weight metrics", isCorrect: false, rationale: "Roles are social and cultural constructs, not based on muscular mass." },
+          { text: "Direct genetic blood types among kin", isCorrect: false, rationale: "Genetics do not dictate social family role dynamics." },
+          { text: "Geographic distance from regional academic hospital centers", isCorrect: false, rationale: "Internal traditions shape the family structure regardless of location." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "Child health promotion begins at which stage of life?",
+        options: [
+          { text: "From the earliest stages of pregnancy", isCorrect: true, rationale: "Prenatal care and maternal health lay the foundation for child development and health resiliency." },
+          { text: "At formal school entry (around 6 years of age)", isCorrect: false, rationale: "Health promotion must start during the prenatal period and infancy." },
+          { text: "Only upon emergence of the first set of primary teeth", isCorrect: false, rationale: "Infant nutrition and protection occur well before dentition." },
+          { text: "Following the completion of the primary vaccination series", isCorrect: false, rationale: "Foundational health initiatives precede postnatal immunizations." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "Which statement reflects the concept of viewing children as whole persons beyond their illness?",
+        options: [
+          { text: "Appreciating families as families and children as children", isCorrect: true, rationale: "Recognizing that children have aspirations, talents, and play needs distinct from their medical conditions is essential." },
+          { text: "Categorizing patients primarily by their diagnosis bed number", isCorrect: false, rationale: "Depersonalizing patients contradicts the core ethos of pediatric nursing." },
+          { text: "Limiting recreational play until laboratory values normalize", isCorrect: false, rationale: "Play is critical for coping and development even during illness." },
+          { text: "Shielding children from all hospital social interaction", isCorrect: false, rationale: "Socialization fosters resilience and prevents isolation." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "What is an important outcome of successful nurse-led family counseling?",
+        options: [
+          { text: "Enables the family to attain a higher level of functioning and self-esteem", isCorrect: true, rationale: "Counseling resolves crisis points and empowers families to achieve stronger interpersonal coping." },
+          { text: "Creates total long-term dependency on medical nursing staff", isCorrect: false, rationale: "Empowering independence is the true goal of family counseling." },
+          { text: "Eliminates all future emotional stress during medical visits", isCorrect: false, rationale: "Stress cannot be completely eliminated, but healthy coping mechanisms can be built." },
+          { text: "Replaces parent involvement with specialized medical therapy", isCorrect: false, rationale: "Counseling strengthens parental involvement and advocacy." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "How does indirect health teaching typically occur in pediatric units?",
+        options: [
+          { text: "Helping parents understand a child's diagnostic report or medication purpose", isCorrect: true, rationale: "Indirect education takes place during day-to-day clinical interactions and procedural explanations." },
+          { text: "Enrolling parents in formal evening university nursing classes", isCorrect: false, rationale: "Formal curricula are not standard bedside indirect teaching methods." },
+          { text: "Distributing academic textbooks without clinician dialogue", isCorrect: false, rationale: "Literature must be paired with accessible bedside explanation." },
+          { text: "Displaying instructional health banners in administrative corridors", isCorrect: false, rationale: "Bedside interaction provides personal and meaningful indirect education." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "Which of the following is considered a negative constraint in therapeutic pediatric communication?",
+        options: [
+          { text: "Using judgmental language that invalidates family emotional reactions", isCorrect: true, rationale: "Judgmental phrases break trust, alienate family members, and impair collaboration." },
+          { text: "Providing concise explanations adapted to the child's age", isCorrect: false, rationale: "Age-appropriate explanations promote trust and understanding." },
+          { text: "Encouraging siblings to participate in bedside games", isCorrect: false, rationale: "Family involvement is strongly encouraged in pediatric settings." },
+          { text: "Offering choices when administering non-painful oral liquids", isCorrect: false, rationale: "Offering choices gives pediatric patients a healthy sense of control." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "How does cultural humility differ fundamentally from cultural competence?",
+        options: [
+          { text: "Humility focuses on dynamic self-reflection rather than an endpoint of mastery", isCorrect: true, rationale: "Humility accepts culture as dynamic and fluid, whereas competence assumes an achievable mastery level." },
+          { text: "Humility implies memorizing a static checklist of religious rules", isCorrect: false, rationale: "Checklist mentalities can foster false stereotyping." },
+          { text: "Competence involves lifelong personal introspection and openness", isCorrect: false, rationale: "Lifelong introspection is the core definition of cultural humility." },
+          { text: "There is no difference in modern evidence-based healthcare terminology", isCorrect: false, rationale: "Cultural humility represents a distinct, reflective model." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "When a nurse encourages parents to participate in daily bed bathing and feeds in the hospital, this reinforces:",
+        options: [
+          { text: "Parental empowerment and conservation of child routine", isCorrect: true, rationale: "Active involvement maintains the parent-child bond and reduces feelings of powerlessness." },
+          { text: "Transfer of legal medical liability onto the family", isCorrect: false, rationale: "Nursing staff retain complete clinical responsibility for care standards." },
+          { text: "Staff avoidance of routine nursing physical duties", isCorrect: false, rationale: "Involving parents is therapeutic, not an administrative task-shifting measure." },
+          { text: "Exclusion of siblings from visiting the pediatric ward", isCorrect: false, rationale: "Sibling visitation can and should be accommodated safely." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "Which term describes interventions designed to reduce emotional distress before an invasive injection?",
+        options: [
+          { text: "Atraumatic care interventions", isCorrect: true, rationale: "Using topical numbing agents, procedural distraction, and parental presence are key atraumatic techniques." },
+          { text: "Authoritarian control protocol", isCorrect: false, rationale: "Forceful control elevates pediatric trauma and distress." },
+          { text: "Involuntary sensory deprivation", isCorrect: false, rationale: "Sensory deprivation increases anxiety in young children." },
+          { text: "Passive physiological restraint", isCorrect: false, rationale: "Restraint should be minimized through atraumatic comforting techniques." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "What is an appropriate response when a hospitalized preschooler expresses fear of a stethoscope?",
+        options: [
+          { text: "Allow the child to inspect and touch the instrument or examine a teddy bear first", isCorrect: true, rationale: "Playful exploration demystifies medical equipment and reduces fear of bodily harm." },
+          { text: "Firmly hold down the child's arms and proceed immediately", isCorrect: false, rationale: "Forceful restraint heightens panic and fear of mutilation." },
+          { text: "Explain detailed acoustic sound-wave physics to the preschooler", isCorrect: false, rationale: "Abstract physical explanations exceed preschool cognitive capabilities." },
+          { text: "Cancel the vital sign assessment entirely until discharge", isCorrect: false, rationale: "Vital signs must be assessed, but should be accomplished using atraumatic strategies." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "Honoring cultural strengths in family-centered care involves which practice?",
+        options: [
+          { text: "Incorporating family cultural health beliefs into safe individualized nursing care plans", isCorrect: true, rationale: "Collaborative care adapts to family traditions whenever medically safe." },
+          { text: "Forbidding traditional dietary foods during the entire hospital stay", isCorrect: false, rationale: "Cultural dietary preferences should be integrated when medically appropriate." },
+          { text: "Assuming that all families of the same ethnic background hold identical beliefs", isCorrect: false, rationale: "Stereotyping fails to honor individual family differences." },
+          { text: "Refusing to translate health teaching materials into native tongues", isCorrect: false, rationale: "Clear, culturally responsive communication is mandatory." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "The pediatric nurse's role in injury prevention includes safety counseling primarily because:",
+        options: [
+          { text: "Unintentional injuries are a leading cause of pediatric morbidity and mortality", isCorrect: true, rationale: "Anticipatory counseling addresses age-specific hazards to prevent injuries before they occur." },
+          { text: "Hospitals receive punitive financial fines if children fall at home", isCorrect: false, rationale: "Guidance is motivated by holistic child advocacy, not punitive fines." },
+          { text: "Children under 5 years naturally possess adult hazard judgment", isCorrect: false, rationale: "Young children lack cause-and-effect reasoning regarding hazards." },
+          { text: "Vaccines have eliminated all physiological communicable hazards", isCorrect: false, rationale: "Immunizations prevent infections, but physical injury risks remain prevalent." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "What is the primary role of the pediatric nurse as a coordinator of care?",
+        options: [
+          { text: "Facilitating seamless interprofessional collaboration among the healthcare team", isCorrect: true, rationale: "The nurse coordinates physical therapists, physicians, dietitians, and social workers to maintain holistic care." },
+          { text: "Handling all hospital maintenance and billing issues personally", isCorrect: false, rationale: "Administrative services manage billing and plant operations." },
+          { text: "Administering only medical interventions while ignoring social issues", isCorrect: false, rationale: "Holistic care requires addressing biopsychosocial aspects." },
+          { text: "Preventing families from interacting with physicians directly", isCorrect: false, rationale: "The nurse encourages open family-physician communication." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "Why should healthcare systems establish family-to-family networking groups?",
+        options: [
+          { text: "To allow families facing similar diagnoses to share coping strategies and mutual empathy", isCorrect: true, rationale: "Peer support reduces feelings of isolation among parents managing chronic childhood illnesses." },
+          { text: "To delegate inpatient nursing administration duties to experienced parents", isCorrect: false, rationale: "Support networks provide emotional and community backing, not clinical staffing." },
+          { text: "To rank family compliance publicly on hospital leaderboards", isCorrect: false, rationale: "Public ranking violates patient privacy and dignity." },
+          { text: "To avoid scheduling formal physician follow-up clinics", isCorrect: false, rationale: "Peer networking supplements, but never replaces, professional medical oversight." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "In pediatric nursing, what does 'maintaining the child's routine' accomplish?",
+        options: [
+          { text: "Fosters security and minimizes feelings of loss of control", isCorrect: true, rationale: "Preserving familiar meal, sleep, and play schedules creates environmental predictability." },
+          { text: "Accelerates laboratory testing turn-around times", isCorrect: false, rationale: "Routines benefit the child's coping; they do not alter lab machines." },
+          { text: "Eliminates the risk of nosocomial hospital infections", isCorrect: false, rationale: "Infection control requires strict aseptic technique and sanitation." },
+          { text: "Prevents the need for therapeutic play sessions", isCorrect: false, rationale: "Play remains essential to the child's routine." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "Which of the following demonstrates therapeutic communication with an anxious mother?",
+        options: [
+          { text: "'It sounds like you are feeling overwhelmed; let's talk about what concerns you most.'", isCorrect: true, rationale: "Open-ended, empathetic statements validate feelings and invite collaborative dialogue." },
+          { text: "'You don't need to worry; our hospital doctors never make mistakes.'", isCorrect: false, rationale: "False reassurance dismisses maternal anxiety and diminishes trust." },
+          { text: "'You must calm down right now or you will be asked to leave the room.'", isCorrect: false, rationale: "Threatening language destroys therapeutic rapport." },
+          { text: "'Children always cry during these procedures, so you should ignore it.'", isCorrect: false, rationale: "Dismissing a child's distress contradicts atraumatic care principles." }
+        ]
+      },
+      {
+        lecture: 1,
+        question: "How does the pediatric nurse uphold ethical autonomy for an adolescent patient?",
+        options: [
+          { text: "Involving the adolescent in care decisions and seeking developmental assent", isCorrect: true, rationale: "Developmentally appropriate assent respects adolescent autonomy and promotes cooperation." },
+          { text: "Demanding that parents leave the hospital premises entirely", isCorrect: false, rationale: "Parental involvement remains important for adolescent legal consent and emotional support." },
+          { text: "Concealing the medical diagnosis from both the patient and family", isCorrect: false, rationale: "Honest communication is fundamental to ethical practice." },
+          { text: "Treating the adolescent identically to an unresponsive infant", isCorrect: false, rationale: "Care must match the patient's specific developmental maturity level." }
+        ]
+      },
+
+      // ================= LECTURE 2: CHILD HOSPITALIZATION =================
+      {
+        lecture: 2,
+        question: "What are the four major stressors of hospitalization experienced by children?",
+        options: [
+          { text: "Separation, loss of control, bodily injury, and pain", isCorrect: true, rationale: "These four factors constitute the universal stressors of pediatric hospitalization." },
+          { text: "Hospital food, homework delays, room temperature, and lighting", isCorrect: false, rationale: "While bothersome, these are minor environmental factors rather than primary developmental stressors." },
+          { text: "Medication costs, nursing turnover, bed height, and stethoscope coolness", isCorrect: false, rationale: "These do not represent the classic developmental crises of pediatric admission." },
+          { text: "Peer competition, grading anxiety, screen limits, and dress codes", isCorrect: false, rationale: "These represent school or social issues rather than inpatient hospital stressors." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "Which developmental stage is most acutely vulnerable to separation anxiety during hospitalization?",
+        options: [
+          { text: "Toddlerhood (6 to 30 months)", isCorrect: true, rationale: "Early childhood, particularly the toddler stage, exhibits profound separation anxiety due to attachment bonds." },
+          { text: "Late adolescence (16 to 18 years)", isCorrect: false, rationale: "Adolescents worry more about peer loss, privacy, and body image." },
+          { text: "School-age (8 to 10 years)", isCorrect: false, rationale: "School-age children cope better with physical separation, though they fear loss of control and school absence." },
+          { text: "Early newborn period (first 2 weeks)", isCorrect: false, rationale: "Newborns respond to tactile comfort and physiologic needs rather than psychological separation." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "How does a toddler typically demonstrate the initial stage of separation anxiety?",
+        options: [
+          { text: "Pleading for parents to stay, crying loudly, and having temper tantrums", isCorrect: true, rationale: "This reflects the protest phase, where the child actively fights the parent's departure." },
+          { text: "Showing complete indifference and ignoring the parents' presence", isCorrect: false, rationale: "Detachment (denial) occurs only after prolonged separation." },
+          { text: "Engaging quietly in abstract philosophical journaling", isCorrect: false, rationale: "Abstract writing is developmental impossibility for toddlers." },
+          { text: "Forming immediate social bonds with unknown room visitors", isCorrect: false, rationale: "Toddlers demonstrate stranger anxiety and cling to primary caregivers." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "How do preschool-age children most commonly express separation anxiety?",
+        options: [
+          { text: "Refusing to eat, difficulty sleeping, quiet crying, or indirect aggression like breaking toys", isCorrect: true, rationale: "Preschoolers show less direct screaming and more passive-aggressive behaviors or withdrawal." },
+          { text: "Demanding to drive the family vehicle back home", isCorrect: false, rationale: "This does not align with preschool abilities." },
+          { text: "Exhibiting severe panic over lost school report cards", isCorrect: false, rationale: "Academic performance anxieties occur in school-age children." },
+          { text: "Seeking complete isolation from parents for days at a time", isCorrect: false, rationale: "Preschoolers continually ask when their parents will visit." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "What is the primary separation-related concern for hospitalized adolescents?",
+        options: [
+          { text: "Loss of peer-group contact, status, and peer acceptance", isCorrect: true, rationale: "Adolescent identity is tied to peers; disruption in peer contact poses an emotional threat." },
+          { text: "Fear of monsters under the hospital treatment bed", isCorrect: false, rationale: "Fanciful fears are characteristic of toddlers and preschoolers." },
+          { text: "Separation from primary infant teething rings", isCorrect: false, rationale: "Teething applies to infancy, not adolescence." },
+          { text: "Lack of constant physical rocking from nurses", isCorrect: false, rationale: "Rocking is an infant soothing technique." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "How does sensory overload (unfamiliar sounds, sights, alarms) affect a hospitalized child?",
+        options: [
+          { text: "Increases perceived threat and intensifies loss of control", isCorrect: true, rationale: "Loud monitors and strange smells overwhelm coping mechanisms and elevate fear." },
+          { text: "Accelerates rapid cognitive problem-solving abilities", isCorrect: false, rationale: "High stress impairs cognitive functioning." },
+          { text: "Guarantees deep restorative slow-wave sleep cycles", isCorrect: false, rationale: "Sensory alarms frequently fragment and interrupt sleep." },
+          { text: "Normalizes the child's developmental milestones instantly", isCorrect: false, rationale: "Overwhelming stimuli can cause developmental regression." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "Which factor increases a healthy sibling's risk of emotional distress when a brother or sister is hospitalized?",
+        options: [
+          { text: "Greater severity of the illness and older sibling age", isCorrect: true, rationale: "Greater disease severity and older sibling age are proven risk factors for reduced sibling quality of life." },
+          { text: "Living in a detached single-family home", isCorrect: false, rationale: "Physical housing type does not directly dictate sibling emotional coping." },
+          { text: "Having a pet dog at the household", isCorrect: false, rationale: "Pets often serve as positive coping comforts." },
+          { text: "Receiving daily video calls from the parents", isCorrect: false, rationale: "Maintaining communication helps reduce sibling loneliness and resentment." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "What is an essential consideration when planning room assignments for pediatric inpatients?",
+        options: [
+          { text: "Age, sex, and nature of the illness", isCorrect: true, rationale: "Grouping children of similar ages and conditions offers developmental peer support and prevents cross-infection." },
+          { text: "Parental insurance company rating score", isCorrect: false, rationale: "Clinical and developmental needs take precedence over insurance ratings." },
+          { text: "The alphabetical order of patient surnames", isCorrect: false, rationale: "Alphabetical bed distribution ignores developmental and infectious needs." },
+          { text: "Patient shoe size and birth month", isCorrect: false, rationale: "These parameters have zero clinical relevance." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "When parents must temporarily leave an infant in the hospital, what should the nurse advise?",
+        options: [
+          { text: "Leave familiar items like blankets, toys, family photos, or audio recordings", isCorrect: true, rationale: "Transitional comfort items and familiar recordings reassure the infant during parental absence." },
+          { text: "Sneak out silently while the infant is sleeping without saying goodbye", isCorrect: false, rationale: "Sneaking out destroys the child's trust in the parent's presence." },
+          { text: "Strip the crib of all personal belongings to maintain strict sterility", isCorrect: false, rationale: "Familiar home items provide crucial emotional comfort." },
+          { text: "Turn off all nursery lights and keep the room completely dark", isCorrect: false, rationale: "Excessive darkness may heighten fear and disorient the infant." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "What is the most effective approach to minimize fear of bodily injury during an invasive procedure in a toddler?",
+        options: [
+          { text: "Perform the procedure as quickly as possible while maintaining parent contact", isCorrect: true, rationale: "Swift execution while supported by parental contact minimizes distress and fear of injury." },
+          { text: "Restrain the toddler securely for thirty minutes before beginning", isCorrect: false, rationale: "Prolonged restraint amplifies terror and resistance." },
+          { text: "Provide detailed diagrams of vascular surgical anatomy", isCorrect: false, rationale: "Toddlers cannot process anatomical diagrams." },
+          { text: "Prohibit parents from being in the treatment room", isCorrect: false, rationale: "Separating parents exacerbates fear and panic." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "What is the purpose of therapeutic play in the pediatric care unit?",
+        options: [
+          { text: "Allows children to manage stress, express fears, and master hospital experiences", isCorrect: true, rationale: "Play is the child's primary medium for coping with stress and unfamiliar medical equipment." },
+          { text: "Keeps children silent and immobile for nursing administrative rounds", isCorrect: false, rationale: "Play is expressive and interactive, not a tool for enforced silence." },
+          { text: "Evaluates the child's potential for athletic competition", isCorrect: false, rationale: "Therapeutic play addresses psychological coping, not athletic scouting." },
+          { text: "Replaces the requirement for intravenous hydration therapy", isCorrect: false, rationale: "Play supports psychological health; it does not replace fluid therapy." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "Can hospitalization ever offer positive psychological benefits to a child?",
+        options: [
+          { text: "Yes, it can foster new coping skills, resilience, and broaden socialization", isCorrect: true, rationale: "Successfully navigating illness can empower children and build mastery over stressors." },
+          { text: "No, hospitalization always leaves permanent emotional trauma", isCorrect: false, rationale: "With family-centered care, many children build positive resilience." },
+          { text: "Yes, but exclusively if the child experiences no medical procedures", isCorrect: false, rationale: "Mastery occurs even when undergoing necessary clinical treatments." },
+          { text: "No, positive social outcomes occur solely in school environments", isCorrect: false, rationale: "Hospital child-life interactions can expand interpersonal growth." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "When taking the nursing admission history, why does the nurse ask about home routines and habits?",
+        options: [
+          { text: "To recreate a more familiar, normal environment in the hospital setting", isCorrect: true, rationale: "Matching home feeding, sleep, and potty routines reduces anxiety and regression." },
+          { text: "To identify deficiencies in parenting techniques for reporting", isCorrect: false, rationale: "History collection aims at partnering with parents, not auditing them." },
+          { text: "To determine the exact brand of hospital disinfectant to order", isCorrect: false, rationale: "Infection control protocols are standardized across the institution." },
+          { text: "To schedule clinical medications exclusively at midnight", isCorrect: false, rationale: "Medication timing is tailored to therapy needs while respecting sleep." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "What is a major stressor for parents of a child admitted to an Intensive Care Unit (ICU)?",
+        options: [
+          { text: "The physical appearance of their critically ill child and the complex equipment", isCorrect: true, rationale: "Seeing a child intubated, bruised, or surrounded by alarms causes intense parental distress." },
+          { text: "The color of the ICU unit curtains", isCorrect: false, rationale: "Curtain color is a trivial concern compared to clinical survival." },
+          { text: "The availability of hospital cafeteria discount coupons", isCorrect: false, rationale: "Parental attention is overwhelmingly focused on their child's health." },
+          { text: "Missing their favorite scheduled daytime television programs", isCorrect: false, rationale: "Parents are consumed by worry over their child's prognosis." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "What is the primary information need of parents with a child in the pediatric ICU?",
+        options: [
+          { text: "Frequent, honest updates about their child's condition and treatment plan", isCorrect: true, rationale: "Accurate, clear information reduces anxiety and helps parents process critical illness." },
+          { text: "A detailed summary of hospital financial profits", isCorrect: false, rationale: "Parents prioritize their child's clinical condition and survival." },
+          { text: "Instructions to stay away until extubation is complete", isCorrect: false, rationale: "Parental presence is encouraged to provide emotional comfort." },
+          { text: "Technical engineering diagrams of mechanical ventilators", isCorrect: false, rationale: "Parents need clear, understandable clinical explanations rather than schematic diagrams." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "Why do parents frequently bring their child to the Emergency Department?",
+        options: [
+          { text: "Severe anxiety that the child's acute symptoms are rapidly worsening", isCorrect: true, rationale: "Fear of sudden deterioration is the primary driver of emergency visits." },
+          { text: "A preference for hospital waiting rooms over home relaxation", isCorrect: false, rationale: "Emergency visits are driven by health concerns and acute distress." },
+          { text: "A desire to avoid scheduled primary care appointments", isCorrect: false, rationale: "Acute perceived emergencies drive parents to seek urgent care." },
+          { text: "Routine sports physical clearance paperwork requirements", isCorrect: false, rationale: "Routine clearances belong in outpatient clinics, not the ED." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "When a healthcare provider feels an ED case is non-urgent, what is the nurse's priority goal?",
+        options: [
+          { text: "Assess the parents' perception of the event and why they felt it was life-threatening", isCorrect: true, rationale: "Understanding parental perception validates their anxiety and guides appropriate reassurance." },
+          { text: "Reprimand the parents for wasting emergency staff time", isCorrect: false, rationale: "Scolding parents destroys the therapeutic relationship." },
+          { text: "Discharge the family immediately without taking vital signs", isCorrect: false, rationale: "Every pediatric patient requires assessment and triage." },
+          { text: "Refer the parents to social services for unnecessary clinic utilization", isCorrect: false, rationale: "Parental worry is normal and requires education rather than punitive measures." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "How should a nurse prepare a young child for medical isolation?",
+        options: [
+          { text: "Explain what they will see, hear, and feel, and explain protective masks gently", isCorrect: true, rationale: "Sensory preparation demystifies PPE gear and prevents intense fear of gowns and masks." },
+          { text: "Lock the isolation door without verbal explanation to prevent escapes", isCorrect: false, rationale: "Unexplained confinement traumatizes young children." },
+          { text: "Tell the child isolation is a punishment for poor behavior at home", isCorrect: false, rationale: "Illness must never be framed as a punishment." },
+          { text: "Remove all toys and prohibit parent phone calls", isCorrect: false, rationale: "Isolating children from comforting objects and parents exacerbates stress." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "What is an effective strategy to promote freedom of movement for an active toddler with an IV line?",
+        options: [
+          { text: "Facilitate parent-child holding and embrace to minimize the need for mechanical restraints", isCorrect: true, rationale: "Holding and comfort positioning by parents are far superior to physical restraints." },
+          { text: "Apply four-point extremity leather restraints to the bed frame", isCorrect: false, rationale: "Four-point restraints are unsafe and contraindicated in routine toddler care." },
+          { text: "Sedate the toddler heavily throughout the hospitalization", isCorrect: false, rationale: "Sedation carries respiratory risks and impairs developmental recovery." },
+          { text: "Immobilize both legs and arms with rigid splints continuously", isCorrect: false, rationale: "Restraint should be used only as an absolute last resort." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "How should a nurse prepare a school-age child for an upcoming planned surgery?",
+        options: [
+          { text: "Provide preadmission preparation including a facility tour and step-by-step review", isCorrect: true, rationale: "Preadmission tours and concrete sensory preparation reduce fear of the unknown." },
+          { text: "Keep the surgery a secret until the child is inside the operating room", isCorrect: false, rationale: "Surprise admissions destroy trust and provoke intense anxiety." },
+          { text: "Tell the child that the operation is just a painless game of pretend", isCorrect: false, rationale: "Dishonesty undermines the child's coping and trust in nurses." },
+          { text: "Provide medical journal articles containing complex morbidity tables", isCorrect: false, rationale: "Information must match the child's developmental comprehension level." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "What is a characteristic sibling reaction to a child's chronic hospitalization?",
+        options: [
+          { text: "Feelings of jealousy, resentment, guilt, fear, and loneliness", isCorrect: true, rationale: "Siblings often feel left out due to parental focus shifting to the ill child." },
+          { text: "Consistent joy that parental attention is focused outside the home", isCorrect: false, rationale: "Siblings typically miss parental presence and feel abandoned." },
+          { text: "Total developmental immunity to any psychological distress", isCorrect: false, rationale: "Siblings are at documented risk for impaired quality of life." },
+          { text: "Immediate resolution of all behavioral challenges at school", isCorrect: false, rationale: "Sibling stress often manifests as school behavioral issues." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "Prior to sibling visitation in the pediatric unit, what is an essential nursing responsibility?",
+        options: [
+          { text: "Prepare siblings with developmentally appropriate explanations of what they will see", isCorrect: true, rationale: "Explaining tubes, monitors, and dressings prevents shock and panic during visits." },
+          { text: "Require siblings to pass a written medical terminology exam", isCorrect: false, rationale: "Preparation should be supportive, visual, and age-adapted, not academic." },
+          { text: "Strictly prohibit siblings under age 12 from entering the room", isCorrect: false, rationale: "Visits should be evaluated individually rather than using arbitrary bans." },
+          { text: "Advise siblings not to speak to or touch their brother or sister", isCorrect: false, rationale: "Gentle physical and verbal contact reassures both children." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "Which intervention helps a school-age child maintain a sense of mastery during hospitalization?",
+        options: [
+          { text: "Encouraging self-care participation, schoolwork continuation, and age-appropriate choices", isCorrect: true, rationale: "Participation in daily routines and choices reinforces autonomy and self-esteem." },
+          { text: "Forbidding the child from deciding which arm receives a blood pressure cuff", isCorrect: false, rationale: "Offering simple choices helps the child maintain a sense of control." },
+          { text: "Prohibiting all communication with classmates and teachers", isCorrect: false, rationale: "School connections maintain normalcy for school-age children." },
+          { text: "Performing all personal grooming and feeding tasks for the child", isCorrect: false, rationale: "Unnecessary total care fosters learned helplessness." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "When a toddler exhibits behavioral regression (e.g., bedwetting after toilet training), how should parents respond?",
+        options: [
+          { text: "Reassure the parents that regression is a normal stress response and will subside", isCorrect: true, rationale: "Bedwetting is a common reaction to hospital stress and should be treated without shame." },
+          { text: "Advise parents to punish the child with time-outs for every accident", isCorrect: false, rationale: "Punishment worsens stress, feelings of shame, and developmental delay." },
+          { text: "Inform parents that the child has permanent neurological brain damage", isCorrect: false, rationale: "Regression during hospitalization is transient and reversible." },
+          { text: "Demand that the child remain strictly in diapers through age seven", isCorrect: false, rationale: "Normal potty routines should be gently resumed as recovery progresses." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "What is an effective method to encourage parental presence during hospital rounds?",
+        options: [
+          { text: "Implementing family-centered rounding where parents actively share observations", isCorrect: true, rationale: "Family-centered rounding elevates collaboration and empowers parents as key team members." },
+          { text: "Conducting rounds in quiet private conference rooms away from parents", isCorrect: false, rationale: "Excluding parents prevents shared decision-making." },
+          { text: "Allowing parents to observe only through a one-way window", isCorrect: false, rationale: "Direct, supportive bedside communication is the goal of FCC." },
+          { text: "Fining parents who ask clarifying questions during morning shifts", isCorrect: false, rationale: "Parental questions are encouraged and supported." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "Why should pediatric discharge planning begin on the day of hospital admission?",
+        options: [
+          { text: "To identify family home-care needs, teach skills, and ensure safe transition", isCorrect: true, rationale: "Early discharge preparation ensures parents are confident in medical management at home." },
+          { text: "To rush the patient out of the facility before medical recovery", isCorrect: false, rationale: "Planning ensures safety; it does not accelerate premature discharge." },
+          { text: "To eliminate the need for post-discharge medical follow-up", isCorrect: false, rationale: "Follow-up visits remain an essential component of discharge care." },
+          { text: "To prevent parents from bringing questions to the clinical staff", isCorrect: false, rationale: "Early planning gives parents ample time to ask questions." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "How can a nurse promote sleep hygiene in a hospitalized pediatric unit?",
+        options: [
+          { text: "Cluster care interventions, dim hallway lights, and minimize nighttime alarms", isCorrect: true, rationale: "Clustering vital signs and medication passes avoids frequent sleep interruptions." },
+          { text: "Awaken the child every 15 minutes all night to assess orientation", isCorrect: false, rationale: "Constant awakening leads to severe sleep deprivation." },
+          { text: "Keep overhead lights at maximum brightness throughout the night", isCorrect: false, rationale: "Excessive illumination disrupts circadian rhythms and restorative sleep." },
+          { text: "Prohibit parents from sleeping at the child's bedside", isCorrect: false, rationale: "Parental bedside presence fosters security and peaceful sleep." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "A hospitalized preschooler believes illness is a punishment for arguing with a sibling. This is an example of:",
+        options: [
+          { text: "Preoperational magical thinking and egocentrism", isCorrect: true, rationale: "Preschool children commonly associate unrelated personal thoughts with real-world physical events." },
+          { text: "Formal operational deductive reasoning", isCorrect: false, rationale: "Formal operational thought emerges during adolescence." },
+          { text: "Clinical psychological sociopathy", isCorrect: false, rationale: "Magical thinking is a healthy, typical stage of early childhood cognitive development." },
+          { text: "Permanent intellectual disability", isCorrect: false, rationale: "This is a universal developmental stage described in Piaget's framework." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "What is the nurse's best action when an adolescent refuses to take prescribed oral medications?",
+        options: [
+          { text: "Explore the teen's feelings, discuss reasons for refusal, and negotiate a collaborative schedule", isCorrect: true, rationale: "Partnering with the adolescent respects their desire for autonomy and enhances compliance." },
+          { text: "Crush the pill secretly in dessert without informing the teen", isCorrect: false, rationale: "Deceptive practices destroy therapeutic trust and patient autonomy." },
+          { text: "Restrain the teen and administer the medication via a nasogastric tube", isCorrect: false, rationale: "Forceful restraint for routine medication is inappropriate and traumatic." },
+          { text: "Immediately discharge the adolescent for noncompliance", isCorrect: false, rationale: "Adolescents require empathetic counseling, not punitive abandonment." }
+        ]
+      },
+      {
+        lecture: 2,
+        question: "Which of the following interventions minimizes the stress of post-hospital discharge in a toddler?",
+        options: [
+          { text: "Encouraging parents to maintain consistent daily schedules and patience with transient regression", isCorrect: true, rationale: "Predictability and parental comfort help the child reintegrate smoothly into the home routine." },
+          { text: "Immediately enrolling the toddler in an intensive academic tutoring program", isCorrect: false, rationale: "Toddlers need emotional security and unstructured play after hospital discharge." },
+          { text: "Strictly isolating the child from all family members for two weeks", isCorrect: false, rationale: "Isolation reinforces feelings of abandonment and exacerbates anxiety." },
+          { text: "Refusing to allow the toddler to hold any favorite comfort toys", isCorrect: false, rationale: "Transitional objects provide vital emotional stability." }
+        ]
+      },
+
+      // ================= LECTURE 3: PROBLEMS OF THE NEWBORN & BIRTH INJURIES =================
+      {
+        lecture: 3,
+        question: "Which extra-cranial scalp condition is characterized by an edematous swelling that crosses cranial suture lines?",
+        options: [
+          { text: "Caput succedaneum", isCorrect: true, rationale: "Caput succedaneum consists of serosanguinous fluid above the periosteum and crosses suture lines." },
+          { text: "Cephalhematoma", isCorrect: false, rationale: "Cephalhematoma is subperiosteal and strictly bounded by suture lines." },
+          { text: "Subgaleal hemorrhage", isCorrect: false, rationale: "While subgaleal crosses sutures, it is an extensive, boggy, fluctuating blood pool into the neck." },
+          { text: "Craniostenosis", isCorrect: false, rationale: "Craniostenosis is the premature fusion of cranial sutures." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "Which feature distinguishes a Cephalhematoma from a Caput succedaneum?",
+        options: [
+          { text: "It is sharply demarcated and does NOT cross cranial suture lines", isCorrect: true, rationale: "Because bleeding is trapped under the periosteum of a specific bone, it is delimited by suture margins." },
+          { text: "It is present immediately at birth and disappears within 24 hours", isCorrect: false, rationale: "Cephalhematoma typically appears hours to days after birth and takes weeks to resolve." },
+          { text: "It causes no risk of hyperbilirubinemia during breakdown", isCorrect: false, rationale: "RBC breakdown within a cephalhematoma frequently contributes to neonatal jaundice." },
+          { text: "It involves edema located entirely outside the aponeurosis", isCorrect: false, rationale: "Cephalhematoma is subperiosteal, beneath the periosteum layer." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "What is a potential life-threatening complication associated with severe Subgaleal Hemorrhage?",
+        options: [
+          { text: "Hypovolemic shock due to massive blood accumulation into loose connective tissues", isCorrect: true, rationale: "The subgaleal space can accommodate over half of a newborn's total blood volume, leading to fatal shock." },
+          { text: "Immediate premature fusion of the sagittal suture line", isCorrect: false, rationale: "Hemorrhage does not trigger premature bone fusion." },
+          { text: "Development of immediate esophageal candidiasis", isCorrect: false, rationale: "Candidiasis is a fungal infection, unrelated to scalp trauma." },
+          { text: "Permanent microcephaly within the first two weeks of life", isCorrect: false, rationale: "Microcephaly relates to brain underdevelopment, not subgaleal pooling." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "Which clinical sign is an early indicator of expanding subgaleal hemorrhage?",
+        options: [
+          { text: "A boggy, fluctuant scalp mass crossing suture lines and expanding head circumference", isCorrect: true, rationale: "Fluctuant swelling shifting to dependent areas combined with pallor and tachycardia marks subgaleal bleeding." },
+          { text: "Pinpoint nonraised petechiae over the chest", isCorrect: false, rationale: "Petechiae on the chest are common soft-tissue birth canal compression marks." },
+          { text: "Immediate high fever and purulent ear discharge", isCorrect: false, rationale: "Fever and purulent ear drainage indicate acute infection rather than acute bleeding." },
+          { text: "Sudden closure of the anterior and posterior fontanelles", isCorrect: false, rationale: "Fontanelles do not abruptly close from scalp hemorrhage." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "What is the typical clinical course for uncomplicated Caput Succedaneum?",
+        options: [
+          { text: "Subsides spontaneously within a few days without treatment", isCorrect: true, rationale: "Edematous serum fluid absorbs spontaneously across the first few days of life." },
+          { text: "Requires surgical aspiration and drainage on day two", isCorrect: false, rationale: "Aspiration is contraindicated due to severe infection risk." },
+          { text: "Progresses into permanent craniostenosis by month six", isCorrect: false, rationale: "Caput has no connection to suture synostosis." },
+          { text: "Persists unchanged for the first four years of childhood", isCorrect: false, rationale: "Edema resolves within days of delivery." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "Which soft tissue birth injury presents as nonraised, pinpoint hemorrhages from sudden vascular pressure changes?",
+        options: [
+          { text: "Petechiae", isCorrect: true, rationale: "Petechiae are pinpoint, nonraised capillary hemorrhages commonly seen on the face and chest after delivery." },
+          { text: "Ecchymoses", isCorrect: false, rationale: "Ecchymoses are larger, irregular hemorrhagic patches." },
+          { text: "Subcutaneous fat necrosis", isCorrect: false, rationale: "Fat necrosis presents as firm, circumscribed, movable subcutaneous masses." },
+          { text: "Erythema toxicum", isCorrect: false, rationale: "Erythema toxicum is an inflammatory eosinophilic newborn rash." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "How does Subcutaneous Fat Necrosis in the newborn present upon physical palpation?",
+        options: [
+          { text: "Firm, clearly circumscribed, movable masses under intact overlying skin", isCorrect: true, rationale: "Mechanical pressure during delivery causes localized fat necrosis appearing as firm, movable nodules." },
+          { text: "Soft, fluctuant collections of purulent foul-smelling fluid", isCorrect: false, rationale: "Purulent collections denote bacterial abscesses, not benign fat necrosis." },
+          { text: "Vesicles on an erythematous base filled with clear exudate", isCorrect: false, rationale: "Vesicles suggest viral infections like Herpes Simplex Virus." },
+          { text: "Depressed saucer-like defects within the skull plates", isCorrect: false, rationale: "Depressed defects represent skull bone fractures." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "What is the definition of Craniostenosis (craniosynostosis)?",
+        options: [
+          { text: "Premature closure at birth of one or more cranial sutures", isCorrect: true, rationale: "Premature fusion restricts skull growth perpendicular to the suture line, leading to cranial deformities." },
+          { text: "Congenital failure of the ventricular neural tube to form", isCorrect: false, rationale: "Neural tube failure describes conditions like anencephaly or spina bifida." },
+          { text: "Infection of the basal ganglia by unconjugated bilirubin", isCorrect: false, rationale: "Bilirubin deposition in the basal ganglia is termed kernicterus." },
+          { text: "Accumulation of air within the infant gastrointestinal wall", isCorrect: false, rationale: "Intramural bowel air describes pneumatosis intestinalis in NEC." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "Which underlying etiology is associated with congenital Microcephaly?",
+        options: [
+          { text: "Autosomal genetic disorders or chromosomal anomalies like Down syndrome", isCorrect: true, rationale: "Microcephaly stems from genetic defects, chromosomal syndromes, or intrauterine brain insults." },
+          { text: "Excessive maternal dietary intake of water-soluble vitamin C", isCorrect: false, rationale: "Vitamin C intake has no causative link to microcephaly." },
+          { text: "Routine phototherapy application for neonatal jaundice", isCorrect: false, rationale: "Phototherapy does not arrest brain growth." },
+          { text: "Exclusive breastfeeding past the fourth month of life", isCorrect: false, rationale: "Breastfeeding supports optimal neurodevelopment." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "Which statement accurately describes Erythema Toxicum Neonatorum?",
+        options: [
+          { text: "A benign, self-limiting newborn rash appearing in the first 2 days and resolving in 5-7 days", isCorrect: true, rationale: "Also called 'flea bite rash', it is harmless, requires no pharmacotherapy, and resolves spontaneously." },
+          { text: "A life-threatening fungal bloodstream infection requiring intravenous amphotericin B", isCorrect: false, rationale: "Erythema toxicum is a benign, non-infectious inflammatory reaction." },
+          { text: "A necrotic skin breakdown requiring emergency wide surgical debridement", isCorrect: false, rationale: "No surgical intervention is ever required." },
+          { text: "A permanent vascular birthmark that darkens throughout adolescence", isCorrect: false, rationale: "The rash is transient and leaves no skin pigmentation." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "What is the characteristic clinical appearance of Oral Candidiasis (Thrush)?",
+        options: [
+          { text: "White adherent patches on the tongue and oral mucosa that bleed when scraped", isCorrect: true, rationale: "Unlike milk curds that wipe away easily, thrush patches adhere firmly and bleed upon removal." },
+          { text: "Yellowish crusting around the bilateral nares that flakes off freely", isCorrect: false, rationale: "Honey-colored crusting suggests bacterial impetigo." },
+          { text: "Deep purple nodules along the hard palate that spontaneously disappear", isCorrect: false, rationale: "Purple nodules do not characterize fungal candidiasis." },
+          { text: "Translucent fluid-filled blisters along the outer vermilion lip border", isCorrect: false, rationale: "Vesicles on the vermilion border suggest herpes simplex, not thrush." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "What is the primary causative organism of neonatal oral thrush?",
+        options: [
+          { text: "Candida albicans", isCorrect: true, rationale: "Candida albicans is a fungal yeast organism responsible for oral thrush and diaper dermatitis." },
+          { text: "Streptococcus pneumoniae", isCorrect: false, rationale: "S. pneumoniae is a bacterial agent causing pneumonia, otitis, and sepsis." },
+          { text: "Respiratory Syncytial Virus", isCorrect: false, rationale: "RSV is a respiratory viral pathogen causing bronchiolitis." },
+          { text: "Escherichia coli", isCorrect: false, rationale: "E. coli is a gram-negative rod causing neonatal sepsis and diarrhea." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "What is the standard topical antifungal medication used to treat oral candidiasis in neonates?",
+        options: [
+          { text: "Nystatin oral suspension (or miconazole / Daktarin oral gel)", isCorrect: true, rationale: "Nystatin is applied directly across the oral mucosa 4 times daily after feedings." },
+          { text: "Oral ampicillin antibiotic drops", isCorrect: false, rationale: "Antibiotics are ineffective against fungi and actually worsen thrush." },
+          { text: "Intravenous acyclovir antiviral infusions", isCorrect: false, rationale: "Acyclovir is indicated for herpes simplex viral infections." },
+          { text: "Topical hydrocortisone steroid cream", isCorrect: false, rationale: "Steroids suppress local immunity and exacerbate fungal proliferation." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "To prevent reinfection in an infant receiving treatment for oral candidiasis, what must caregivers do?",
+        options: [
+          { text: "Boil reusable nipples and bottles for at least 20 minutes after washing", isCorrect: true, rationale: "Boiling for 20 minutes sterilizes fungal spores on rubber and silicone feeding equipment." },
+          { text: "Wipe bottles with dry paper tissues only", isCorrect: false, rationale: "Dry wiping fails to eradicate fungal yeast spores." },
+          { text: "Store formula at warm room temperature for several days", isCorrect: false, rationale: "Warm standing formula encourages massive bacterial and fungal proliferation." },
+          { text: "Rinse pacifiers in sugar syrup before every feeding", isCorrect: false, rationale: "Sugar promotes fungal growth and accelerates dental caries." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "Why should an infant's mouth be rinsed with water prior to applying nystatin suspension?",
+        options: [
+          { text: "To clear leftover milk residue so the antifungal directly contacts mucosal lesions", isCorrect: true, rationale: "Rinsing removes milk coats, allowing the antifungal suspension direct contact with yeast patches." },
+          { text: "To induce immediate therapeutic vomiting of stomach acid", isCorrect: false, rationale: "Vomiting is distressing and causes aspiration risks." },
+          { text: "To dilute the medicine so it enters the bloodstream faster", isCorrect: false, rationale: "Nystatin works topically along the mucosa, not via systemic absorption." },
+          { text: "To test the infant's cough reflex before bedtime", isCorrect: false, rationale: "Rinsing is performed solely to cleanse the mucous membranes." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "Which characteristic makes Neonatal Herpes Simplex Virus (HSV) an urgent pediatric emergency?",
+        options: [
+          { text: "It carries a mortality rate of up to 60% without treatment and causes severe CNS damage", isCorrect: true, rationale: "Neonatal herpes can disseminate rapidly to the brain, liver, and lungs, with high mortality." },
+          { text: "It resolves spontaneously in 100% of cases within 24 hours", isCorrect: false, rationale: "HSV is never self-limiting in the newborn; it requires urgent treatment." },
+          { text: "It is strictly limited to mild itching of the nailbeds", isCorrect: false, rationale: "HSV causes vesicular eruptions, CNS encephalopathy, and disseminated organ failure." },
+          { text: "It cannot be treated with any known antiviral medications", isCorrect: false, rationale: "Acyclovir is highly effective when initiated promptly." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "How are neonatal HSV lesions typically described?",
+        options: [
+          { text: "Vesicles or pustules on an erythematous base, often occurring in clusters", isCorrect: true, rationale: "Classic HSV presentation displays grouped vesicles on an inflamed red base." },
+          { text: "Dry, scaly silvery plaques on the extensor elbow surfaces", isCorrect: false, rationale: "Silvery plaques characterize chronic pediatric psoriasis." },
+          { text: "Flat slate-blue hyperpigmented macules over the sacrum", isCorrect: false, rationale: "Slate-blue sacral macules describe benign Mongolian spots." },
+          { text: "Widespread sandpaper erythematous rash sparing the mouth", isCorrect: false, rationale: "Sandpaper texture characterizes scarlet fever." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "What antiviral medication is indicated when neonatal herpes infection is diagnosed?",
+        options: [
+          { text: "Intravenous Acyclovir", isCorrect: true, rationale: "Intravenous acyclovir is the gold standard antiviral therapy for neonatal HSV." },
+          { text: "Oral Amoxicillin", isCorrect: false, rationale: "Amoxicillin is an antibacterial agent with zero activity against HSV." },
+          { text: "Topical Nystatin", isCorrect: false, rationale: "Nystatin treats fungal infections, not viral pathogens." },
+          { text: "Subcutaneous Insulin", isCorrect: false, rationale: "Insulin regulates glucose homeostasis." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "What are Mongolian Spots (congenital dermal melanocytosis)?",
+        options: [
+          { text: "Benign, slate-blue discolorations commonly on the lumbosacral region requiring only reassurance", isCorrect: true, rationale: "Mongolian spots are benign melanin accumulations that gradually fade over early childhood." },
+          { text: "Malignant melanomas requiring immediate surgical oncologic excision", isCorrect: false, rationale: "They are entirely benign and non-cancerous." },
+          { text: "Infectious abscesses caused by deep bacterial seeding during birth", isCorrect: false, rationale: "They have no infectious etiology." },
+          { text: "Signs of physical trauma that require child protective service reporting", isCorrect: false, rationale: "They must be accurately documented to avoid misinterpretation as abuse." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "Erb-Duchenne paralysis results from birth injury to which anatomical nerve group?",
+        options: [
+          { text: "Upper brachial plexus nerves (C5-C6)", isCorrect: true, rationale: "Stretching of the upper brachial plexus roots causes arm adduction and internal rotation ('waiter's tip')." },
+          { text: "Sciatic nerve in the popliteal fossa", isCorrect: false, rationale: "The sciatic nerve innervates the lower extremity." },
+          { text: "Vagus nerve in the carotid sheath", isCorrect: false, rationale: "The vagus nerve innervates visceral organs and vocal structures." },
+          { text: "Trigeminal sensory nerve branches", isCorrect: false, rationale: "The trigeminal nerve supplies facial sensation and mastication muscles." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "Which nerve palsy causes unilateral diaphragmatic paralysis in the newborn?",
+        options: [
+          { text: "Phrenic nerve palsy", isCorrect: true, rationale: "Injury to the phrenic nerve impairs diaphragmatic movement, causing paradoxical breathing and respiratory distress." },
+          { text: "Facial nerve palsy", isCorrect: false, rationale: "Facial nerve palsy leads to facial drooping and lack of eye closure on the affected side." },
+          { text: "Femoral nerve palsy", isCorrect: false, rationale: "Femoral nerve injury affects leg extension and thigh flexion." },
+          { text: "Radial nerve palsy", isCorrect: false, rationale: "Radial nerve injury produces wrist drop." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "What is the most common bony fracture sustained by an infant during difficult labor and delivery?",
+        options: [
+          { text: "Clavicle", isCorrect: true, rationale: "The clavicle is the most commonly fractured bone during shoulder dystocia or vertex delivery." },
+          { text: "Femur", isCorrect: false, rationale: "Femur fractures occur less frequently, usually in breech extractions." },
+          { text: "Mandible", isCorrect: false, rationale: "Mandibular fractures are extremely rare in neonatal birth trauma." },
+          { text: "Scapula", isCorrect: false, rationale: "The scapula is protected by muscle and rarely fractures during birth." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "Which clinical sign alerts the nurse to a fractured clavicle in a newborn?",
+        options: [
+          { text: "Crepitus, focal swelling, and asymmetric Moro reflex on the affected side", isCorrect: true, rationale: "Bone crepitus and lack of arm abduction during the Moro reflex are classic signs of clavicular fracture." },
+          { text: "Hyperactive bilateral knee-jerk reflexes", isCorrect: false, rationale: "Bilateral hyperreflexia suggests upper motor neuron involvement, not bone fracture." },
+          { text: "Immediate copious bloody vomiting", isCorrect: false, rationale: "Hematemesis points to swallowed maternal blood or upper GI bleeding." },
+          { text: "Presence of excessive lanugo across the scapular plane", isCorrect: false, rationale: "Lanugo is a sign of gestational prematurity, not traumatic fracture." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "How is newborn facial paralysis from birth trauma managed clinically?",
+        options: [
+          { text: "Supportive nursing care, protecting the unclosed eye with artificial tears, and patience as it resolves", isCorrect: true, rationale: "Most facial palsies from forceps or pelvic pressure recover spontaneously over weeks; eye care is vital." },
+          { text: "Immediate facial nerve surgical transection and grafting", isCorrect: false, rationale: "Surgery is avoided as spontaneous nerve regeneration is typical." },
+          { text: "Application of permanent rigid metal headgear", isCorrect: false, rationale: "Rigid headgear is contraindicated in the neonate." },
+          { text: "Total fluid restriction for the first thirty days of life", isCorrect: false, rationale: "Fluid restriction would lead to fatal dehydration." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "What causes subconjunctival (scleral) hemorrhage during vertex delivery?",
+        options: [
+          { text: "Rupture of delicate scleral capillaries from high head pressure during birth", isCorrect: true, rationale: "Increased venous pressure during expulsion bursts small conjunctival vessels; it resolves harmlessly." },
+          { text: "Severe viral herpes simplex infection of the cornea", isCorrect: false, rationale: "Herpetic keratoconjunctivitis presents with corneal dendritic ulcers." },
+          { text: "Congenital glaucoma with high intraocular pressures", isCorrect: false, rationale: "Congenital glaucoma presents with corneal clouding and buphthalmos." },
+          { text: "Direct ocular toxic reactions to routine erythromycin eye prophylaxis", isCorrect: false, rationale: "Prophylactic eye ointments cause mild chemical irritation, not deep scleral hemorrhage." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "Which diagnostic tool evaluates cranial bones and distinguishes suture patency from craniostenosis?",
+        options: [
+          { text: "Cranial computed tomography (CT) scan or skull radiographs", isCorrect: true, rationale: "CT imaging accurately reveals fused cranial sutures and guide neurosurgical remodeling." },
+          { text: "Serum glucose blood test", isCorrect: false, rationale: "Blood glucose evaluates metabolic hypoglycemia, not bone anatomy." },
+          { text: "Stool guaiac occult blood test", isCorrect: false, rationale: "Guaiac cards assess gastrointestinal bleeding." },
+          { text: "Sputum Gram stain analysis", isCorrect: false, rationale: "Sputum stains identify respiratory bacterial infections." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "When documenting soft tissue birth injuries, what information is mandatory for the nurse to record?",
+        options: [
+          { text: "Accurate physical description including location, size, color, shape, and skin integrity", isCorrect: true, rationale: "Detailed baseline documentation enables clinicians to assess progression or resolution." },
+          { text: "Only the subjective opinions of extended family visitors", isCorrect: false, rationale: "Documentation must consist of objective, precise clinical observations." },
+          { text: "A promise to parents that all birthmarks disappear within 24 hours", isCorrect: false, rationale: "Giving false guarantees violates nursing ethics and misinforms parents." },
+          { text: "The name of the delivery room manufacturer of forceps", isCorrect: false, rationale: "The instrument brand is irrelevant to clinical nursing documentation of injury." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "Gentian violet solution is occasionally applied for refractory oral thrush; what is a known limitation?",
+        options: [
+          { text: "It treats oral lesions but does not eradicate gastrointestinal Candida organisms", isCorrect: true, rationale: "Gentian violet only has local topical efficacy and does not address systemic or gut yeast." },
+          { text: "It triggers immediate severe hyperbilirubinemia in all term infants", isCorrect: false, rationale: "Gentian violet does not cause hemolysis or jaundice." },
+          { text: "It permanently stains the child's teeth purple through adulthood", isCorrect: false, rationale: "The staining of oral mucosa is temporary and fades within days." },
+          { text: "It accelerates the premature fusion of cranial fontanelles", isCorrect: false, rationale: "Topical dyes have no effect on skeletal suture development." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "Why are retinal hemorrhages in a newborn evaluated with careful neuro-ophthalmic vigilance?",
+        options: [
+          { text: "Extensive retinal hemorrhages may indicate underlying intracranial trauma or subdural hematoma", isCorrect: true, rationale: "While mild flame hemorrhages can be benign, extensive bleeding may signal severe intracranial trauma." },
+          { text: "They are the primary sign of congenital lactose intolerance", isCorrect: false, rationale: "Lactose intolerance presents with diarrhea and abdominal distention." },
+          { text: "They indicate that the infant must be placed immediately in absolute darkness", isCorrect: false, rationale: "Total light deprivation is unnecessary and non-therapeutic." },
+          { text: "They are caused exclusively by poor parental hand hygiene", isCorrect: false, rationale: "Retinal hemorrhages result from mechanical pressures, not bacterial contamination." }
+        ]
+      },
+      {
+        lecture: 3,
+        question: "What is an essential component of parental guidance when a newborn is born with facial birthmarks?",
+        options: [
+          { text: "Provide empathetic reassurance, explanation of lesion type, and realistic prognosis", isCorrect: true, rationale: "Facial lesions cause intense parental anxiety regarding aesthetics and social stigma; education is key." },
+          { text: "Advise parents to keep the infant covered with a blanket at all times", isCorrect: false, rationale: "Hiding the infant exacerbates parental shame and distress." },
+          { text: "Instruct parents that birthmarks are caused by maternal dietary errors during pregnancy", isCorrect: false, rationale: "This fosters false guilt; birthmarks are unrelated to maternal food choices." },
+          { text: "Recommend immediate chemical bleaching treatments on day one of life", isCorrect: false, rationale: "Chemical bleaching on neonatal skin is dangerous and contraindicated." }
+        ]
+      },
+
+      // ================= LECTURE 4: INFANT FEEDING & WEANING =================
+      {
+        lecture: 4,
+        question: "What is the official recommendation of the American Academy of Pediatrics (AAP) regarding infant feeding?",
+        options: [
+          { text: "Exclusive breastfeeding until 6 months, continuing to at least 1 year or beyond", isCorrect: true, rationale: "AAP guidelines recommend exclusive breastfeeding for 6 months, continuing alongside solids through 12 months." },
+          { text: "Introduction of whole cow's milk starting at 2 weeks of age", isCorrect: false, rationale: "Whole cow's milk is contraindicated before 12 months due to renal solute load and GI bleeding risks." },
+          { text: "Introduction of solid cereals into bottles by 1 month of age", isCorrect: false, rationale: "Solids before 4-6 months increase aspiration and allergy risks." },
+          { text: "Mandatory cessation of all milk feeds at exactly 6 months", isCorrect: false, rationale: "Milk remains the primary nutritional foundation throughout the entire first year." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "Which of the following is an absolute maternal contraindication to breastfeeding in developed nations?",
+        options: [
+          { text: "Maternal HIV infection or active untreated tuberculosis", isCorrect: true, rationale: "HIV can be transmitted via breast milk, and active untreated TB poses airborne transmission risks." },
+          { text: "Mild common cold or viral upper respiratory infection", isCorrect: false, rationale: "Maternal colds transfer protective antibodies to the baby through milk." },
+          { text: "Engorged bilateral breast tissue on postpartum day 3", isCorrect: false, rationale: "Engorgement is a normal physiological stage managed by frequent feedings." },
+          { text: "Maternal age greater than 35 years", isCorrect: false, rationale: "Maternal age is not a contraindication to breastfeeding." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "Which infant metabolic condition is an absolute contraindication to breastfeeding?",
+        options: [
+          { text: "Galactosemia", isCorrect: true, rationale: "Infants with galactosemia lack the enzyme to metabolize galactose (derived from lactose) and require soy/elemental formula." },
+          { text: "Mild physiological jaundice", isCorrect: false, rationale: "Physiological jaundice is managed with increased feeding frequency." },
+          { text: "Physiologic umbilical hernia", isCorrect: false, rationale: "Umbilical hernias do not impair enteral milk digestion." },
+          { text: "Presence of erythema toxicum neonatorum", isCorrect: false, rationale: "Benign newborn rashes have no link to enteral nutrition." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "Why is human milk protein considered superior in digestibility to unmodified cow's milk?",
+        options: [
+          { text: "Contains more lactalbumin producing soft curds rather than hard casein curds", isCorrect: true, rationale: "Lactalbumin whey produces light, easily digestible curds, whereas casein yields dense, rubbery curds." },
+          { text: "Contains zero amino acids, preventing metabolic processing", isCorrect: false, rationale: "Human milk is rich in essential amino acids, including taurine and cystine." },
+          { text: "Contains five times higher protein concentration than cow's milk", isCorrect: false, rationale: "Cow's milk contains excessive protein that burdens immature neonatal kidneys." },
+          { text: "Has undergone artificial ultra-high heat sterilization in the breast", isCorrect: false, rationale: "Breast milk is natural and provides living bioactive cells and enzymes." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "Which vital immunoglobulin is abundant in human colostrum and mature breast milk?",
+        options: [
+          { text: "Secretory Immunoglobulin A (IgA)", isCorrect: true, rationale: "Secretory IgA lines the neonatal gut mucosa, preventing mucosal invasion by pathogenic microbes." },
+          { text: "Immunoglobulin E (IgE)", isCorrect: false, rationale: "IgE is involved in allergic and hypersensitivity reactions." },
+          { text: "Immunoglobulin D (IgD)", isCorrect: false, rationale: "IgD exists in trace quantities on B-cell surfaces." },
+          { text: "Circulating Histamine complex", isCorrect: false, rationale: "Histamine is an inflammatory mediator, not an immunoglobulin." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "In what behavioral state is it most advantageous to initiate an infant feeding session?",
+        options: [
+          { text: "Quiet alert state", isCorrect: true, rationale: "The quiet alert state is optimal; frantic crying causes uncoordinated latching and air swallowing." },
+          { text: "Crying and hyperventilating state", isCorrect: false, rationale: "Crying infants struggle to coordinate breathing, sucking, and swallowing." },
+          { text: "Deep sleep state with non-responsive reflexes", isCorrect: false, rationale: "Sleeping infants do not engage in active suck-swallow reflexes." },
+          { text: "Immediate post-bath shivering state", isCorrect: false, rationale: "Cold-stressed infants should be rewarmed first to avoid hypoglycemia." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "What does 'consummatory behavior' refer to during successful infant feeding?",
+        options: [
+          { text: "Coordinated rhythmic sucking and swallowing", isCorrect: true, rationale: "Consummatory behavior consists of effective rhythmic suck-and-swallow cycles that transfer milk." },
+          { text: "Searching and rooting toward the cheek stimulus", isCorrect: false, rationale: "Rooting is an 'approach behavior'." },
+          { text: "Falling asleep peacefully with relaxed limbs", isCorrect: false, rationale: "Falling asleep demonstrates 'satiety behavior'." },
+          { text: "Fussing and crying due to hunger", isCorrect: false, rationale: "Crying is a 'prefeeding behavior'." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "Which hand position should a mother use to support the breast during infant latching?",
+        options: [
+          { text: "The C-hold (thumb on top, fingers beneath encircling the breast behind the areola)", isCorrect: true, rationale: "The C-hold supports the breast tissue without compressing the lactiferous ducts or blocking the nipple." },
+          { text: "The scissor-pinch compressing the nipple tightly between two knuckles", isCorrect: false, rationale: "Scissor holds pinch the nipple and restrict milk ejection." },
+          { text: "Pulling the breast tissue downward toward the maternal umbilicus", isCorrect: false, rationale: "Downward traction misaligns the latch and leads to sore nipples." },
+          { text: "Firmly squeezing the infant's cheeks with both palms", isCorrect: false, rationale: "Forcing the infant's face causes resistance and head turning." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "What is the proper method for a mother to break suction when detaching the infant from the breast?",
+        options: [
+          { text: "Insert a clean finger gently into the corner of the mouth between the gums", isCorrect: true, rationale: "Breaking suction with a finger prevents nipple trauma, bruising, and fissures." },
+          { text: "Pull the infant straight backward away from the chest abruptly", isCorrect: false, rationale: "Pulling off while latched causes painful nipple abrasion and damage." },
+          { text: "Pinch the infant's bilateral nostrils closed until they gasp", isCorrect: false, rationale: "Pinching the nose causes choking and panic." },
+          { text: "Wait up to two hours until the infant detaches during REM sleep", isCorrect: false, rationale: "Prolonged non-nutritive sucking can cause skin maceration." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "Why is 'bottle propping' strictly discouraged in infant feeding?",
+        options: [
+          { text: "Increases risk of choking, aspiration, otitis media, and dental caries", isCorrect: true, rationale: "Propped bottles cause liquid pooling, which enters eustachian tubes, erodes teeth, and risks aspiration." },
+          { text: "Slows down hospital nurse documentation workflow", isCorrect: false, rationale: "Propping is discouraged due to serious physiological dangers, not staffing convenience." },
+          { text: "Causes immediate premature closed cranial sutures", isCorrect: false, rationale: "Feeding techniques do not cause craniosynostosis." },
+          { text: "Transforms infant formula into pathogenic amoebae", isCorrect: false, rationale: "Formula does not transform into amoebae; the hazard is aspiration and pooling." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "What is the definition of 'Weaning' in infant nutritional development?",
+        options: [
+          { text: "The gradual process of transitioning from breast or bottle to a cup and solid foods", isCorrect: true, rationale: "Weaning is the developmental progression of relinquishing liquid breast/bottle feeds for diverse foods." },
+          { text: "Abruptly halting all fluid intake at three months of age", isCorrect: false, rationale: "Abrupt fluid cessation causes fatal dehydration." },
+          { text: "Replacing milk entirely with raw animal broths and water", isCorrect: false, rationale: "Broths lack the balanced calories, fat, and proteins essential for infants." },
+          { text: "Teaching an infant to swallow solid pills whole", isCorrect: false, rationale: "Infants cannot safely swallow whole tablets." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "Why should solid foods NOT be introduced to an infant before 4 to 6 months of age?",
+        options: [
+          { text: "The gastrointestinal tract and renal systems are developmentally immature", isCorrect: true, rationale: "Enzyme immaturity, head lag, extrusion reflex, and high renal solute load make early solids unsafe." },
+          { text: "Solid foods destroy the physiological calcification of infant bones", isCorrect: false, rationale: "Nutrients support bone growth when introduced at developmentally appropriate ages." },
+          { text: "Infants under six months lack all salivary glands", isCorrect: false, rationale: "Salivary amylase is present, but overall gut digestion of solids is limited early on." },
+          { text: "It causes instant loss of auditory hearing reflexes", isCorrect: false, rationale: "Dietary solids have no effect on the acoustic nerve." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "When initiating solid foods, what is the recommended schedule for introducing new single ingredients?",
+        options: [
+          { text: "Introduce one new single solid every 5 to 7 days", isCorrect: true, rationale: "Spacing new foods by 5 to 7 days allows clear identification of food allergies or intolerances." },
+          { text: "Introduce five new complex dishes simultaneously every morning", isCorrect: false, rationale: "Simultaneous additions make isolating allergic culprits impossible." },
+          { text: "Change food types once every calendar month only", isCorrect: false, rationale: "A month is unnecessarily long; 5 to 7 days is the evidence-based window." },
+          { text: "Offer foods mixed with raw honey from day one", isCorrect: false, rationale: "Honey is strictly forbidden under 12 months due to Clostridium botulinum risks." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "Which finger foods can be offered to an infant around 6 months of age to encourage chewing?",
+        options: [
+          { text: "Teething crackers or zweiback toast", isCorrect: true, rationale: "These dissolve readily with saliva, providing safe teething comfort with low choking risk." },
+          { text: "Whole hard roasted peanuts and cashews", isCorrect: false, rationale: "Whole nuts are severe choking hazards in children under 4." },
+          { text: "Whole unpeeled firm grapes", isCorrect: false, rationale: "Whole round grapes easily lodge in the airway and cause asphyxiation." },
+          { text: "Raw crunchy carrot sticks", isCorrect: false, rationale: "Hard raw vegetables must be avoided due to aspiration hazards." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "By 8 to 9 months of age, which textures are developmentally appropriate to offer?",
+        options: [
+          { text: "Junior foods, soft cooked mashed vegetables, and small pieces of cheese", isCorrect: true, rationale: "Infants develop the pincer grasp and tongue control, making soft finger foods safe and beneficial." },
+          { text: "Rare undercooked steak cut into large chunks", isCorrect: false, rationale: "Undercooked large meat pieces pose infection and severe choking hazards." },
+          { text: "Whole hard candies and jelly beans", isCorrect: false, rationale: "Hard candies are major aspiration hazards." },
+          { text: "Strictly distilled water with zero solid nutrients", isCorrect: false, rationale: "Water intoxication can occur; solid nutrition is needed for iron and zinc." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "Why must raw fruits with seeds, whole grapes, and nuts be avoided in early childhood?",
+        options: [
+          { text: "They present a severe hazard for mechanical airway aspiration and choking", isCorrect: true, rationale: "Smooth round or hard objects can lodge in small pediatric tracheas, causing fatal obstruction." },
+          { text: "They contain chemical inhibitors that destroy vitamin D in the stomach", isCorrect: false, rationale: "The danger is mechanical airway obstruction, not vitamin neutralization." },
+          { text: "They cause immediate viral gastroenteritis on contact", isCorrect: false, rationale: "Aspiration is the primary clinical danger." },
+          { text: "They stimulate the pituitary to stop growth hormone release", isCorrect: false, rationale: "Choking is the true emergency." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "Why do some cultural communities withhold colostrum from neonates until mature milk arrives?",
+        options: [
+          { text: "Belief that colostrum is 'stale' or too small in volume, risking infant dehydration", isCorrect: true, rationale: "Certain cultural beliefs consider thin yellowish colostrum inadequate, prompting nonmilk prelacteal feeds." },
+          { text: "Colostrum contains high levels of industrial plasticizers", isCorrect: false, rationale: "Colostrum is pure, nutrient-dense physiological fluid." },
+          { text: "Hospitals legally forbid colostrum administration worldwide", isCorrect: false, rationale: "WHO and health ministries strongly endorse immediate colostrum feeding." },
+          { text: "Colostrum has been shown to cause congenital craniostenosis", isCorrect: false, rationale: "Colostrum is entirely protective and healthy." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "Which mineral in breast milk has a lower absolute concentration than in cow's milk but is much more readily absorbed?",
+        options: [
+          { text: "Iron", isCorrect: true, rationale: "Approximately 50% of breast milk iron is absorbed, compared to only 10% from cow's milk formula." },
+          { text: "Lead", isCorrect: false, rationale: "Lead is a toxic heavy metal, not a nutritional mineral." },
+          { text: "Mercury", isCorrect: false, rationale: "Mercury is an environmental toxin." },
+          { text: "Arsenic", isCorrect: false, rationale: "Arsenic is a poison." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "What gastrointestinal benefit does the high lactose content of human breast milk provide?",
+        options: [
+          { text: "Stimulates beneficial gut flora to synthesize B vitamins and acidify intestinal contents", isCorrect: true, rationale: "Lactose promotes Lactobacillus bifidus growth, lowering intestinal pH to inhibit gram-negative pathogens." },
+          { text: "Immediately halts all peristaltic bowel motility for 48 hours", isCorrect: false, rationale: "Lactose promotes healthy, soft, frequent infant stooling." },
+          { text: "Neutralizes gastric hydrochloric acid to zero", isCorrect: false, rationale: "Stomach acid is necessary for protein breakdown and germ defense." },
+          { text: "Causes permanent lactose intolerance by six months of age", isCorrect: false, rationale: "Lactose is the natural and ideal carbohydrate of human milk." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "Why is whole cow's milk inappropriate for infant nutrition during the first year of life?",
+        options: [
+          { text: "High renal solute load, deficient essential fatty acids, and risk of occult intestinal microbleeding", isCorrect: true, rationale: "Cow's milk contains excessive minerals/protein that stress kidneys and can trigger microscopic GI bleeding." },
+          { text: "Contains too little protein and causes kwashiorkor within two days", isCorrect: false, rationale: "Cow's milk actually contains excessive protein compared to breast milk." },
+          { text: "It lacks water, leading to severe hyperpyrexia within two hours", isCorrect: false, rationale: "Cow's milk is mostly water, but its high solute load burdens renal processing." },
+          { text: "It instantly hardens into solid calcium stones in the stomach", isCorrect: false, rationale: "It forms dense curds, but kidney solute overload and iron deficiency are the primary hazards." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "Which vitamin must be supplemented in breastfed term infants beginning in the first few days of life?",
+        options: [
+          { text: "Vitamin D (400 IU/day)", isCorrect: true, rationale: "Breast milk contains low levels of vitamin D; supplementation prevents nutritional rickets." },
+          { text: "Vitamin C (1000 mg/day)", isCorrect: false, rationale: "Maternal diet provides adequate vitamin C in human milk." },
+          { text: "Megadose Vitamin A", isCorrect: false, rationale: "Megadoses of vitamin A are fat-soluble and toxic." },
+          { text: "Synthetic Folic Acid", isCorrect: false, rationale: "Mature breast milk contains sufficient folate for term infants." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "What physical sign indicates that an infant has established an effective, deep latch onto the breast?",
+        options: [
+          { text: "Lips flanged outward with the chin touching the breast and areola deeply grasped", isCorrect: true, rationale: "Flanged 'fish-like' lips and chin pressed into breast ensure deep duct compression without nipple pinching." },
+          { text: "Only the tip of the nipple rests between the infant's closed lips", isCorrect: false, rationale: "Shallow latch causes maternal pain, blisters, and inadequate milk transfer." },
+          { text: "The infant's nose is buried completely into the tissue, occluding airflow", isCorrect: false, rationale: "The nose should be free of obstruction; the chin rests against the breast." },
+          { text: "Audible loud clicking and smacking noises occur with every suck", isCorrect: false, rationale: "Clicking sounds suggest lost suction and poor latch dynamics." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "How should a nurse instruct a mother regarding feeding duration during the early breastfeeding period?",
+        options: [
+          { text: "Allow the infant to feed until satisfied, typically 15 to 20 minutes per breast", isCorrect: true, rationale: "Feeding until the infant shows satiety ensures access to calorie-dense hindmilk." },
+          { text: "Strictly limit each side to exactly two minutes by a stopwatch", isCorrect: false, rationale: "Two minutes provides only thin foremilk and starves the infant of hindmilk fats." },
+          { text: "Feed exclusively on one single breast for the first six months of life", isCorrect: false, rationale: "Alternating breasts maintains bilateral milk production and prevents unilateral mastitis." },
+          { text: "Feed only once every 12 hours to prevent maternal fatigue", isCorrect: false, rationale: "Newborns require feedings 8 to 12 times per 24 hours to thrive." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "Which of the following describes 'satiety behavior' in a feeding infant?",
+        options: [
+          { text: "Relaxed open hands, unlatching spontaneously, and falling asleep peacefully", isCorrect: true, rationale: "Release of the nipple, open relaxed palms, and sleepiness are universal satiety signs." },
+          { text: "Furious rooting and sucking on hands vigorously", isCorrect: false, rationale: "Rooting and hand-sucking indicate continued hunger." },
+          { text: "High-pitched shrieking cries with clenched fists", isCorrect: false, rationale: "Clenched fists and crying represent acute hunger or distress." },
+          { text: "Hyperactive startle reflexes and tremor", isCorrect: false, rationale: "Tremors suggest neurological agitation or hypoglycemia, not satiety." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "When selecting the first solid food to introduce to a 6-month-old infant, pediatricians often suggest:",
+        options: [
+          { text: "Iron-fortified single-grain infant cereal (or pureed meats / vegetables)", isCorrect: true, rationale: "Iron-fortified foods replenish depleted fetal iron reserves around 6 months of age." },
+          { text: "Raw chopped onions and garlic cloves", isCorrect: false, rationale: "Spicy and pungent raw alliums can irritate immature stomachs." },
+          { text: "Canned sweetened condensed milk", isCorrect: false, rationale: "Condensed milk contains dangerous levels of sugar and causes hyperosmolar dehydration." },
+          { text: "Commercial deep-fried fast-food meats", isCorrect: false, rationale: "Fried foods are hard to digest and lack balanced micronutrients." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "Why should vegetables be introduced before fruits according to some pediatric feeding practitioners?",
+        options: [
+          { text: "To prevent the infant from developing a strong preference for sweet tastes first", isCorrect: true, rationale: "Introducing savory vegetables before sweeter fruits may encourage acceptance of green vegetables." },
+          { text: "Because fruits destroy the infant's gastric lining enzymes", isCorrect: false, rationale: "Fruits do not destroy gastric enzymes." },
+          { text: "Fruits lack all carbohydrates and calories", isCorrect: false, rationale: "Fruits are naturally rich in fructose and carbohydrates." },
+          { text: "Vegetables are sterile, whereas fruits are always infected with bacteria", isCorrect: false, rationale: "Both properly prepared foods are safe and clean." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "What should parents do if an infant rejects a newly introduced vegetable puree?",
+        options: [
+          { text: "Remain calm and re-offer the food patiently over multiple subsequent meals", isCorrect: true, rationale: "It can take 10 to 15 exposures for an infant to accept new tastes and textures." },
+          { text: "Force the spoon into the mouth while holding the infant's nose", isCorrect: false, rationale: "Force-feeding causes choking, trauma, and negative feeding aversions." },
+          { text: "Never offer vegetables again for the remainder of childhood", isCorrect: false, rationale: "Repeated gentle exposure builds food acceptance over time." },
+          { text: "Mix the vegetable with pure sugar crystals to force compliance", isCorrect: false, rationale: "Adding refined sugar promotes dental decay and poor dietary habits." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "Which of the following is a common symptom of food intolerance or allergy when introducing solids?",
+        options: [
+          { text: "Facial rash, hives, vomiting, diarrhea, or wheezing", isCorrect: true, rationale: "Cutaneous reactions, gastrointestinal distress, and respiratory wheezing signal food hypersensitivity." },
+          { text: "Immediate increase in head circumference by 5 centimeters", isCorrect: false, rationale: "Head circumference growth is unaffected by acute allergic episodes." },
+          { text: "Sudden calcification of both patellar tendons", isCorrect: false, rationale: "Tendon calcification is not a symptom of food allergy." },
+          { text: "Rapid eruption of all twenty deciduous teeth within an hour", isCorrect: false, rationale: "Dentition follows a biological timetable unrelated to food allergies." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "How can parents ensure safe preparation of pureed homemade infant foods?",
+        options: [
+          { text: "Steam vegetables until tender and mash thoroughly without added salt or sugar", isCorrect: true, rationale: "Steaming preserves nutrients, mashing prevents choking, and omitting seasonings protects kidneys." },
+          { text: "Add generous amounts of table salt to stimulate renal electrolyte training", isCorrect: false, rationale: "Added salt stresses immature infant kidneys and is contraindicated." },
+          { text: "Blend with unpasteurized raw honey as a natural preservative", isCorrect: false, rationale: "Raw honey carries severe infant botulism risks." },
+          { text: "Leave prepared purees unrefrigerated on warm countertops for days", isCorrect: false, rationale: "Room temperature storage promotes rapid bacterial food poisoning." }
+        ]
+      },
+      {
+        lecture: 4,
+        question: "When should weaning from a bottle to an open or sippy cup generally be completed?",
+        options: [
+          { text: "Around 12 to 14 months of age", isCorrect: true, rationale: "Weaning around age 1 reduces prolonged bottle feeding risks, like dental caries and excessive milk intake." },
+          { text: "At exactly 3 weeks of age", isCorrect: false, rationale: "Three-week-old infants lack the motor skills needed to drink from a cup." },
+          { text: "Not until school graduation at 6 years", isCorrect: false, rationale: "Prolonged bottle use past 2 years contributes to malocclusion and iron-deficiency anemia." },
+          { text: "Cups should never be introduced to pediatric patients", isCorrect: false, rationale: "Cup drinking is an essential developmental milestone in self-feeding." }
+        ]
+      },
+
+      // ================= LECTURE 5: PROBLEMS OF HIGH-RISK NEONATES =================
+      {
+        lecture: 5,
+        question: "What is the clinical definition of a 'High-Risk Neonate'?",
+        options: [
+          { text: "A newborn with higher than average chance of morbidity or mortality from threats during prenatal, perinatal, or postnatal periods", isCorrect: true, rationale: "High-risk status is defined by increased susceptibility to morbidity or mortality from biological and environmental stressors." },
+          { text: "Any newborn born to parents under thirty years of age", isCorrect: false, rationale: "Parental age under 30 is not an automatic high-risk criterion." },
+          { text: "An infant born precisely on the estimated date of confinement", isCorrect: false, rationale: "Full-term birth at 40 weeks represents the ideal low-risk delivery." },
+          { text: "A newborn requiring routine vitamin K and erythromycin prophylaxis", isCorrect: false, rationale: "Vitamin K and eye prophylaxis are standard care for all neonates." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "How is a 'Preterm' neonate classified based on gestational age?",
+        options: [
+          { text: "Born before 37 to 38 completed weeks of gestation (<38 weeks)", isCorrect: true, rationale: "Preterm infants are defined as those delivered before completed term gestation (<38 weeks in course text)." },
+          { text: "Born between 38 and 42 completed weeks", isCorrect: false, rationale: "This defines a 'Term' neonate." },
+          { text: "Born after 42 completed weeks of gestation", isCorrect: false, rationale: "This defines a 'Post-term' neonate." },
+          { text: "Born weighing greater than 4500 grams", isCorrect: false, rationale: "This defines macrosomia or large for gestational age (LGA)." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "An infant whose birth weight falls below the 10th percentile for gestational age on growth charts is classified as:",
+        options: [
+          { text: "Small for Gestational Age (SGA)", isCorrect: true, rationale: "SGA identifies neonates plotting beneath the 10th percentile curve on standardized growth charts." },
+          { text: "Appropriate for Gestational Age (AGA)", isCorrect: false, rationale: "AGA spans the 10th to 90th percentiles." },
+          { text: "Large for Gestational Age (LGA)", isCorrect: false, rationale: "LGA defines birth weights falling above the 90th percentile." },
+          { text: "Extremely Low Birth Weight (ELBW)", isCorrect: false, rationale: "ELBW is an absolute weight category (<1000g), independent of percentiles." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "What weight threshold defines an 'Extremely Low Birth Weight' (ELBW) infant?",
+        options: [
+          { text: "Birth weight less than 1000 grams", isCorrect: true, rationale: "ELBW corresponds to infants born weighing under 1000 grams." },
+          { text: "Birth weight between 1500 and 2500 grams", isCorrect: false, rationale: "This represents moderately low birth weight (MLBW)." },
+          { text: "Birth weight less than 1500 grams", isCorrect: false, rationale: "Birth weights under 1500 grams are classified as Very Low Birth Weight (VLBW)." },
+          { text: "Birth weight greater than 4000 grams", isCorrect: false, rationale: "This represents macrosomia." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "Which physical characteristic is typical of a premature newborn?",
+        options: [
+          { text: "Wrinkled, thin, shiny red skin with prominent lanugo and minimal subcutaneous fat", isCorrect: true, rationale: "Preterm infants have translucent gelatinous red skin, little subcutaneous adipose tissue, and abundant lanugo." },
+          { text: "Deep protective creases covering the entire sole of the foot", isCorrect: false, rationale: "Preterm soles are smooth with faint or absent creases." },
+          { text: "Firm, thick ear cartilage with instant recoil", isCorrect: false, rationale: "Preterm ears are soft, pliable, and fold easily without recoil." },
+          { text: "Abundant breast tissue measuring over 15 mm with elevated areola", isCorrect: false, rationale: "Preterm infants have flat, barely visible areolae with minimal breast tissue (<10 mm)." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "At what core body temperature (axillary) is a neonate considered hypothermic?",
+        options: [
+          { text: "Below 36.3°C", isCorrect: true, rationale: "Axillary readings below 36.3°C designate neonatal hypothermia, which triggers cold stress." },
+          { text: "Below 37.5°C", isCorrect: false, rationale: "Normal neonatal axillary temperature ranges between 36.5°C and 37.5°C." },
+          { text: "Below 38.5°C", isCorrect: false, rationale: "38.5°C indicates fever (hyperthermia)." },
+          { text: "Below 32.0°C only", isCorrect: false, rationale: "32.0°C reflects severe, profound, life-threatening hypothermia." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "Why are premature infants exceptionally susceptible to hypothermia?",
+        options: [
+          { text: "Large surface-area-to-body-mass ratio, thin skin, and deficient brown fat reserves", isCorrect: true, rationale: "Premature neonates lose heat rapidly through thin skin and lack insulating brown fat deposits." },
+          { text: "Excessive sweating from hyperactive sweat glands", isCorrect: false, rationale: "Premature neonates have immature sweat gland responses." },
+          { text: "Excessive insulating subcutaneous fat layers", isCorrect: false, rationale: "Premature infants have severely deficient subcutaneous adipose layers." },
+          { text: "High rates of physical shivering", isCorrect: false, rationale: "Newborns do not shiver effectively; they rely on non-shivering brown fat thermogenesis." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "At what serum level does accumulated bilirubin typically become clinically visible as jaundice in a newborn?",
+        options: [
+          { text: "Exceeding 5 mg/dl", isCorrect: true, rationale: "Unlike adults who show jaundice at 2 mg/dl, neonatal icterus becomes noticeable when levels exceed 5 mg/dl." },
+          { text: "Exceeding 0.2 mg/dl", isCorrect: false, rationale: "0.2 to 1.4 mg/dl is the normal baseline unconjugated serum bilirubin level." },
+          { text: "Exceeding 25 mg/dl only", isCorrect: false, rationale: "25 mg/dl is dangerously high and carries severe risk of kernicterus." },
+          { text: "Exceeding 50 mg/dl", isCorrect: false, rationale: "Levels this high are rarely survivable without brain injury." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "What serious neurological condition results from bilirubin deposits in the basal ganglia of the brain?",
+        options: [
+          { text: "Kernicterus (Bilirubin Encephalopathy)", isCorrect: true, rationale: "Unconjugated lipid-soluble bilirubin crosses the blood-brain barrier, damaging basal ganglia neurons." },
+          { text: "Craniostenosis", isCorrect: false, rationale: "Craniostenosis is premature suture fusion." },
+          { text: "Microcephaly", isCorrect: false, rationale: "Microcephaly describes a congenitally small head size." },
+          { text: "Subgaleal hematoma", isCorrect: false, rationale: "Subgaleal hematoma is extracranial bleeding." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "Which clinical features indicate acute bilirubin encephalopathy (severe kernicterus)?",
+        options: [
+          { text: "Lethargy, irritability, increased muscle tone, opisthotonos, seizures, and coma", isCorrect: true, rationale: "Opisthotonos (hyperextended backward arching of the spine) with seizures marks acute neurotoxicity." },
+          { text: "Audible wheezing and honey-crusted facial skin", isCorrect: false, rationale: "These indicate asthma and impetigo, respectively." },
+          { text: "Hypotension with profuse sweating of the palms", isCorrect: false, rationale: "These do not characterize kernicterus." },
+          { text: "Immediate premature eruption of teeth", isCorrect: false, rationale: "Dentition is unrelated to neurotoxic kernicterus." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "Which form of jaundice appears within the first 24 hours of life and is considered pathologic?",
+        options: [
+          { text: "Hemolytic disease of the newborn (e.g., Rh or ABO incompatibility)", isCorrect: true, rationale: "Jaundice appearing in the first 24 hours reflects rapid hemolysis and is always pathological." },
+          { text: "Physiologic jaundice", isCorrect: false, rationale: "Physiologic jaundice appears after 24 hours, peaking around day 3 to 5." },
+          { text: "Breast milk jaundice (late-onset)", isCorrect: false, rationale: "Late-onset breast milk jaundice develops after the 4th day and peaks at 10-15 days." },
+          { text: "Breastfeeding-associated jaundice (early-onset)", isCorrect: false, rationale: "Early-onset jaundice related to low intake appears on the 2nd to 4th day." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "What is a mandatory nursing safety measure when caring for an infant under phototherapy lights?",
+        options: [
+          { text: "Protect the eyes with opaque patches and cover the genitalia", isCorrect: true, rationale: "Eye patches prevent retinal phototoxic damage, and shielding genitalia protects gonadal tissue." },
+          { text: "Keep the infant fully dressed in warm wool swaddles", isCorrect: false, rationale: "Maximum skin surface exposure is required for phototherapy to convert bilirubin." },
+          { text: "Restrain both arms and legs to the crib corners continuously", isCorrect: false, rationale: "Restraints are unnecessary and nontherapeutic." },
+          { text: "Discontinue all oral and intravenous fluids completely", isCorrect: false, rationale: "Fluid intake must be increased to offset insensible water loss under phototherapy." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "Which of the following is a recognized complication of phototherapy in neonates?",
+        options: [
+          { text: "Bronze baby syndrome, dehydration, and frequent loose stools", isCorrect: true, rationale: "Phototherapy increases insensible fluid losses, loose watery stools, and can cause a bronze discoloration." },
+          { text: "Premature suture synostosis", isCorrect: false, rationale: "Phototherapy does not cause bone synostosis." },
+          { text: "Immediate closure of the patent ductus arteriosus", isCorrect: false, rationale: "Phototherapy does not chemically close a PDA." },
+          { text: "Bacterial otitis media with effusion", isCorrect: false, rationale: "Phototherapy does not cause middle ear effusions." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "How does phototherapy chemically reduce unconjugated serum bilirubin levels?",
+        options: [
+          { text: "Converts bilirubin by photoisomerization into water-soluble isomers excreted in bile and urine", isCorrect: true, rationale: "Light energy alters unconjugated bilirubin into lumirubin and water-soluble isomers for rapid excretion." },
+          { text: "Destroys all circulating red blood cells in the liver", isCorrect: false, rationale: "Phototherapy does not lyse circulating erythrocytes." },
+          { text: "Chemically binds to gastric hydrochloric acid to form bile stones", isCorrect: false, rationale: "Phototherapy works transcutaneously on cutaneous capillary beds." },
+          { text: "Stimulates immediate surgical drainage of the gallbladder", isCorrect: false, rationale: "Phototherapy is a non-invasive light treatment." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "What is 'Early-Onset Neonatal Sepsis'?",
+        options: [
+          { text: "Infection acquired from the mother during labor and detected within the first 24 to 72 hours", isCorrect: true, rationale: "Early-onset sepsis involves vertical maternal transmission (e.g., GBS, E. coli) presenting in early life." },
+          { text: "Nosocomial infection acquired in the community after 3 months", isCorrect: false, rationale: "Late community infections are not early-onset neonatal sepsis." },
+          { text: "Viral influenza acquired at elementary school entry", isCorrect: false, rationale: "School-age illness does not apply to neonates." },
+          { text: "Allergic skin inflammation from laundry soap", isCorrect: false, rationale: "Sepsis is an invasive bloodstream infection." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "Which maternal intrapartum condition significantly increases the risk for early-onset neonatal sepsis?",
+        options: [
+          { text: "Chorioamnionitis (intra-amniotic infection) and prolonged rupture of membranes", isCorrect: true, rationale: "Ascending bacteria during prolonged rupture of membranes directly infect the fetal membranes and amniotic fluid." },
+          { text: "Maternal preference for natural childbirth methods", isCorrect: false, rationale: "Birth preferences do not cause bacterial bloodstream infections." },
+          { text: "Consuming pasteurized dairy products during pregnancy", isCorrect: false, rationale: "Pasteurized foods are safe and nutritious." },
+          { text: "Delivering at 40 weeks gestation without complications", isCorrect: false, rationale: "Uncomplicated term delivery carries the lowest risk profile." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "What are the early, subtle clinical manifestations of neonatal sepsis?",
+        options: [
+          { text: "Temperature instability (hypothermia), poor feeding, lethargy, and 'not looking right'", isCorrect: true, rationale: "Newborns often fail to spike high fevers; hypothermia, poor feeding, and subtle lethargy are warning signs." },
+          { text: "Hyperactive speech and aggressive playground behaviors", isCorrect: false, rationale: "Neonates cannot speak or run." },
+          { text: "Eruption of deciduous molars with gum hardening", isCorrect: false, rationale: "Dentition is unrelated to neonatal sepsis." },
+          { text: "Localized itching of the knee joints", isCorrect: false, rationale: "Sepsis presents systemically with lethargy and respiratory changes." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "Which initial empirical antibiotic combination is recommended for suspected neonatal sepsis?",
+        options: [
+          { text: "Ampicillin and Gentamicin", isCorrect: true, rationale: "Ampicillin covers Group B Streptococcus and Listeria; Gentamicin covers gram-negative rods like E. coli." },
+          { text: "Oral Nystatin and Daktarin gel", isCorrect: false, rationale: "Nystatin and miconazole treat fungal infections, not bacterial sepsis." },
+          { text: "Acyclovir and Ribavirin", isCorrect: false, rationale: "These are antiviral agents." },
+          { text: "High-dose Aspirin and Prednisone", isCorrect: false, rationale: "Aspirin is contraindicated in infants (Reye syndrome risk) and does not treat sepsis." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "What is the single most critical nursing action to prevent nosocomial sepsis in a neonatal unit?",
+        options: [
+          { text: "Strict, thorough hand hygiene before and after handling each infant and equipment", isCorrect: true, rationale: "Consistent hand washing breaks the transmission chain of opportunistic nursery pathogens." },
+          { text: "Wearing sterile boots and three surgical hats", isCorrect: false, rationale: "Boots and hats do not replace meticulous hand washing." },
+          { text: "Giving every baby broad-spectrum antibiotics prophylactically at birth", isCorrect: false, rationale: "Prophylactic antibiotics create dangerous drug-resistant nursery flora." },
+          { text: "Refusing to change bed linens during the entire admission", isCorrect: false, rationale: "Clean environments support infection control." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "What is Necrotizing Enterocolitis (NEC)?",
+        options: [
+          { text: "An acute inflammatory ischemic necrosis of the bowel, most common in preterm infants", isCorrect: true, rationale: "NEC involves ischemic mucosal compromise, bacterial invasion, and bowel wall necrosis." },
+          { text: "A congenital defect where the intestines herniate into the chest", isCorrect: false, rationale: "This describes a congenital diaphragmatic hernia." },
+          { text: "A benign self-limiting viral rash on the cheeks", isCorrect: false, rationale: "NEC is a life-threatening gastrointestinal surgical emergency." },
+          { text: "Spontaneous closure of the ileocecal valve", isCorrect: false, rationale: "NEC is characterized by tissue necrosis and wall perforation, not valve closure." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "What is considered the single greatest risk factor for the development of NEC?",
+        options: [
+          { text: "Prematurity", isCorrect: true, rationale: "Immature intestinal barrier, dysmotility, and fragile blood flow regulation make preterm neonates vulnerable." },
+          { text: "Post-term gestation past 43 weeks", isCorrect: false, rationale: "Post-term infants carry risks of meconium aspiration, not high rates of NEC." },
+          { text: "Exclusive feeding with maternal breast milk", isCorrect: false, rationale: "Human breast milk is protective against NEC." },
+          { text: "Birth weight greater than 4500 grams", isCorrect: false, rationale: "Macrosomic term infants rarely develop NEC." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "Which triad of clinical signs is prominently seen in an infant developing NEC?",
+        options: [
+          { text: "Abdominal distention, high gastric residuals, and bloody stools", isCorrect: true, rationale: "Distention, feeding intolerance with bile-stained residuals, and occult or gross blood in stools are hallmarks." },
+          { text: "Barking cough, inspiratory stridor, and high fever", isCorrect: false, rationale: "These are classic signs of croup syndromes." },
+          { text: "Strawberry tongue, desquamating palms, and conjunctivitis", isCorrect: false, rationale: "These are clinical criteria for Kawasaki disease." },
+          { text: "Depressed fontanelle with polyuria and hunger", isCorrect: false, rationale: "NEC presents with abdominal distention and feeding refusal." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "What characteristic finding on an abdominal radiograph confirms the diagnosis of NEC?",
+        options: [
+          { text: "Pneumatosis intestinalis ('soap-suds' appearance of air within the bowel wall)", isCorrect: true, rationale: "Gas produced by invading bacteria dissects the bowel wall layers, producing pathognomonic pneumatosis." },
+          { text: "Lobar consolidation of the right middle lung", isCorrect: false, rationale: "Lobar consolidation confirms bacterial pneumonia." },
+          { text: "Ground-glass appearance of lung alveoli", isCorrect: false, rationale: "Ground-glass patterns characterize RDS in premature lungs." },
+          { text: "Complete absence of all gas throughout the entire torso", isCorrect: false, rationale: "Pneumatosis intestinalis displays bubbly intramural gas collections." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "Why are rectal temperatures strictly avoided in infants suspected of having NEC?",
+        options: [
+          { text: "Risk of perforating the fragile, inflamed, ischemic rectal wall", isCorrect: true, rationale: "Thermometer insertion can easily perforate weakened, friable bowel tissues." },
+          { text: "Rectal probes damage the patent ductus arteriosus", isCorrect: false, rationale: "There is no physical connection between the rectum and the ductus arteriosus." },
+          { text: "Causes immediate kernicterus within the basal ganglia", isCorrect: false, rationale: "Kernicterus is caused by hyperbilirubinemia, not thermometry." },
+          { text: "Triggers rapid premature eruption of baby teeth", isCorrect: false, rationale: "Dentition has no association with temperature routes." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "What is the initial medical management protocol when NEC is diagnosed in a neonate?",
+        options: [
+          { text: "Discontinue oral feeds immediately, initiate NG decompression, and start IV antibiotics", isCorrect: true, rationale: "Resting the bowel (NPO), decompressing gastric air, and initiating broad-spectrum IV antibiotics halts disease progression." },
+          { text: "Administer large boluses of solid table food via an oral syringe", isCorrect: false, rationale: "Feeding necrotic bowel leads to perforation and fatal peritonitis." },
+          { text: "Encourage vigorous active tummy-time exercise immediately", isCorrect: false, rationale: "Abdominal pressure increases the risk of bowel rupture." },
+          { text: "Restrict IV fluids and withhold all vascular access", isCorrect: false, rationale: "IV fluids and volume support are essential to manage third-spacing and shock." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "How should an infant with severe abdominal distention from NEC be positioned in the incubator?",
+        options: [
+          { text: "Supine or on the side, and left undiapered to avoid abdominal pressure", isCorrect: true, rationale: "Avoiding tight diapers and prone positioning reduces pressure on the distended, tender abdomen." },
+          { text: "Tightly swaddled prone with sandbags on the abdomen", isCorrect: false, rationale: "External abdominal compression increases perforation risk." },
+          { text: "Suspended vertically head-down by the ankles", isCorrect: false, rationale: "Inverted positioning causes severe intracranial hemorrhage in premature infants." },
+          { text: "Seated upright in a rigid plastic booster chair", isCorrect: false, rationale: "Infants with acute NEC require careful horizontal positioning in an incubator." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "Which protective feeding method significantly reduces the incidence of NEC in VLBW infants?",
+        options: [
+          { text: "Maternal breast milk feeding", isCorrect: true, rationale: "Human breast milk contains immunoglobulins, enzymes, and growth factors that protect the intestinal barrier." },
+          { text: "Undiluted commercial cow's milk formula", isCorrect: false, rationale: "Formula feeding increases the risk of NEC compared to human milk." },
+          { text: "Hypertonic dextrose water solutions", isCorrect: false, rationale: "Hypertonic solutions cause mucosal injury and osmotic stress." },
+          { text: "High-fat adult pureed nutritional shakes", isCorrect: false, rationale: "Adult formulations are unsafe and inappropriate for neonates." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "What is 'trophic feeding' (minimal enteral nutrition) in premature infants?",
+        options: [
+          { text: "Very small volume milk feeds designed to prime and mature the GI mucosa without caloric goals", isCorrect: true, rationale: "Trophic feeds stimulate mucosal enzyme activity and GI motility, protecting against gut atrophy." },
+          { text: "Feeding large pureed steaks through a large gastrostomy button", isCorrect: false, rationale: "Trophic feeds use tiny amounts of human milk (e.g., 1 mL/hr)." },
+          { text: "Administering oral antibiotics every five minutes for life", isCorrect: false, rationale: "Trophic feeds are nutritional/priming feeds, not antibiotic therapy." },
+          { text: "Replacing all vascular IV lines with oral mineral water", isCorrect: false, rationale: "Preterm infants continue to rely primarily on parenteral nutrition during priming." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "Which of the following signs indicates that an infant with NEC has experienced a bowel perforation?",
+        options: [
+          { text: "Free air visible in the peritoneal cavity on a cross-table lateral radiograph", isCorrect: true, rationale: "Pneumoperitoneum (free intraperitoneal air) indicates a full-thickness intestinal perforation." },
+          { text: "A sudden rise in blood hemoglobin to elevated levels", isCorrect: false, rationale: "Perforation typically leads to bleeding, drop in hematocrit, and shock." },
+          { text: "The emergence of bright red cheeks with smiling reflexes", isCorrect: false, rationale: "Perforation produces acute peritonitis, lethargy, gray pallor, and shock." },
+          { text: "Rapid resolution of all abdominal girth swelling", isCorrect: false, rationale: "The abdomen becomes tense, rigid, discolored, and markedly distended." }
+        ]
+      },
+      {
+        lecture: 5,
+        question: "Why should serum electrolytes and BUN/creatinine be carefully tracked during phototherapy?",
+        options: [
+          { text: "To detect dehydration caused by high insensible water loss and loose stools", isCorrect: true, rationale: "Phototherapy heat and breakdown products increase evaporative and stool water losses." },
+          { text: "To monitor for the spontaneous regrowth of the thymus gland", isCorrect: false, rationale: "Electrolytes assess hydration and renal function, not thymic regrowth." },
+          { text: "Because phototherapy converts electrolytes into elemental gold", isCorrect: false, rationale: "This is scientifically absurd." },
+          { text: "To determine when to vaccinate the mother against influenza", isCorrect: false, rationale: "Infant labs monitor the infant's hydration and renal health." }
+        ]
+      },
+
+      // ================= LECTURE 6: RESPIRATORY & CARDIOVASCULAR DYSFUNCTION =================
+      {
+        lecture: 6,
+        question: "What is the primary underlying cause of Respiratory Distress Syndrome (RDS) in premature infants?",
+        options: [
+          { text: "Developmental insufficiency of surfactant production and lung immaturity", isCorrect: true, rationale: "Surfactant deficiency prevents lowering of alveolar surface tension, causing widespread atelectasis." },
+          { text: "Excessive production of thick tracheobronchial mucus plugs", isCorrect: false, rationale: "Mucus hypersecretion is typical of cystic fibrosis, not neonatal RDS." },
+          { text: "Direct bacterial invasion of the pleural cavity by Staphylococcus", isCorrect: false, rationale: "RDS is a developmental surfactant-deficiency disorder, not primary empyema." },
+          { text: "Premature calcification of the diaphragm muscle", isCorrect: false, rationale: "The diaphragm does not calcify in RDS." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "Which radiologic pattern on a chest X-ray confirms the diagnosis of neonatal RDS?",
+        options: [
+          { text: "Diffuse granular 'ground-glass' appearance with prominent air bronchograms", isCorrect: true, rationale: "Alveolar atelectasis against patent air-filled conducting airways creates the classic ground-glass picture." },
+          { text: "Complete unilateral collapse of the left patella bone", isCorrect: false, rationale: "The patella is located in the knee, not the thorax." },
+          { text: "Marked dilation of the ascending colon filled with soap-suds", isCorrect: false, rationale: "Pneumatosis in the colon describes NEC, not pulmonary RDS." },
+          { text: "Total absence of all vascular shadows throughout the mediastinum", isCorrect: false, rationale: "Vascular markings persist; ground-glass atelectasis is the defining sign." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "What is the primary purpose of administering antenatal corticosteroids (e.g., dexamethasone) to a mother in preterm labor?",
+        options: [
+          { text: "Accelerate fetal lung maturation and stimulate surfactant synthesis before birth", isCorrect: true, rationale: "Steroids given 24 hours to 7 days prior to preterm birth accelerate type II pneumocyte surfactant synthesis." },
+          { text: "Treat acute maternal bacterial urinary tract infections", isCorrect: false, rationale: "Steroids are anti-inflammatory, not antibacterial." },
+          { text: "Induce immediate spontaneous closure of the maternal cervix", isCorrect: false, rationale: "Tocolytics are used to delay labor, while steroids promote fetal organ maturity." },
+          { text: "Eliminate the need for all postnatal newborn immunizations", isCorrect: false, rationale: "Steroids do not confer permanent antimicrobial immunization." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "Which nursing consideration is critical immediately following endotracheal surfactant replacement therapy in an infant with RDS?",
+        options: [
+          { text: "Avoid endotracheal suctioning for a specified period to allow lung distribution", isCorrect: true, rationale: "Suctioning too soon after administration removes the medication before it distributes into the alveoli." },
+          { text: "Perform deep tracheal suctioning every 60 seconds", isCorrect: false, rationale: "Suctioning would aspirate the newly instilled surfactant." },
+          { text: "Place the infant immediately in a cold water bath", isCorrect: false, rationale: "Cold water causes severe hypothermia and worsens respiratory acidosis." },
+          { text: "Administer large boluses of solid baby cereal", isCorrect: false, rationale: "Infants on mechanical ventilation are strictly NPO to prevent aspiration." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "What is the most common bacterial pathogen causing Acute Tonsillitis and pharyngitis in school-age children?",
+        options: [
+          { text: "Group A beta-hemolytic streptococci (GABHS)", isCorrect: true, rationale: "GABHS is the primary bacterial cause, requiring prompt treatment to prevent acute rheumatic fever." },
+          { text: "Escherichia coli", isCorrect: false, rationale: "E. coli is primarily a gastrointestinal and urinary pathogen." },
+          { text: "Pseudomonas aeruginosa", isCorrect: false, rationale: "Pseudomonas causes opportunistic infections in immunocompromised or CF patients." },
+          { text: "Clostridium difficile", isCorrect: false, rationale: "C. difficile causes pseudomembranous colitis following antibiotic use." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "Why are red- or brown-colored fluids strictly avoided following a tonsillectomy?",
+        options: [
+          { text: "To avoid confusing colored fluid with fresh or old blood in vomitus", isCorrect: true, rationale: "Clear or light-colored fluids ensure any postoperative hemorrhage is identified immediately." },
+          { text: "Because red dyes chemically neutralize the surgeon's sutures", isCorrect: false, rationale: "Dyes do not dissolve surgical sutures." },
+          { text: "Red juices instantly cause middle ear cholesteatoma", isCorrect: false, rationale: "Cholesteatomas result from chronic negative middle ear pressure, not juice dyes." },
+          { text: "Brown fluids cause immediate vocal cord paralysis", isCorrect: false, rationale: "Juice color has no relationship to recurrent laryngeal nerve function." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "What is an early clinical sign of postoperative hemorrhage following a tonsillectomy?",
+        options: [
+          { text: "Frequent continuous swallowing or clearing of the throat", isCorrect: true, rationale: "Children swallow trickling blood from the pharynx; frequent swallowing is an early warning of active bleeding." },
+          { text: "Severe bilateral knee joint pain", isCorrect: false, rationale: "Knee pain is not a sign of pharyngeal hemorrhage." },
+          { text: "Immediate drop in body temperature to 32°C", isCorrect: false, rationale: "Bleeding causes tachycardia and pallor, not hypothermia." },
+          { text: "Eruption of petechiae across the lower extremities", isCorrect: false, rationale: "Post-tonsillectomy bleeding is localized to the operative tonsillar bed." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "Why is a tonsillectomy typically contraindicated in a child with an unrepaired cleft palate?",
+        options: [
+          { text: "Tonsils help minimize the escape of air through the nose during speech", isCorrect: true, rationale: "The tonsils assist palatopharyngeal closure; excision can worsen hypernasal speech." },
+          { text: "Cleft palates lack all blood supply to the oral tongue", isCorrect: false, rationale: "Tongue vasculature is intact; the concern is velopharyngeal competence." },
+          { text: "Tonsil removal stimulates cleft widening across the forehead", isCorrect: false, rationale: "Cleft palates do not widen across facial bones upon tonsillectomy." },
+          { text: "Children with cleft palates cannot metabolize acetaminophen", isCorrect: false, rationale: "Analgesic metabolism is normal in cleft palate patients." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "Which anatomical feature explains why infants and young children develop frequent Otitis Media?",
+        options: [
+          { text: "Eustachian tubes are shorter, wider, and more horizontal than in adults", isCorrect: true, rationale: "The short, horizontal pediatric eustachian tube allows nasopharyngeal secretions to reflux easily into the middle ear." },
+          { text: "Pediatric ear canals lack an external auditory meatus", isCorrect: false, rationale: "All normal infants possess external ear canals." },
+          { text: "The tympanic membrane is completely absent until age four", isCorrect: false, rationale: "The tympanic membrane is fully formed at birth." },
+          { text: "Cochlear fluid drains directly into the frontal sinuses", isCorrect: false, rationale: "Cochlear perilymph has no direct opening into the frontal sinuses." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "Which finding on pneumatic otoscopy indicates Otitis Media with Effusion (OME)?",
+        options: [
+          { text: "An immobile, orange- or dull-colored tympanic membrane", isCorrect: true, rationale: "Fluid behind the eardrum dampens mobility upon air insufflation and gives a dull or orange-yellow hue." },
+          { text: "A bright translucent pearly-gray drum that moves briskly", isCorrect: false, rationale: "A translucent, mobile pearly-gray eardrum is normal." },
+          { text: "A completely open external auditory canal with white cerumen", isCorrect: false, rationale: "Cerumen is a normal protective wax finding." },
+          { text: "Presence of large pulsating arteries along the auricle", isCorrect: false, rationale: "Auricular vessels do not diagnose middle ear effusion." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "What is the primary clinical feature of Acute Epiglottitis that distinguishes it as a true medical emergency?",
+        options: [
+          { text: "Rapid inflammatory supraglottic edema that can progress to complete airway obstruction", isCorrect: true, rationale: "Swelling of the epiglottis and aryepiglottic folds can rapidly close the airway, causing fatal asphyxia." },
+          { text: "Slowly progressive hacking cough over three months", isCorrect: false, rationale: "Epiglottitis has an abrupt, rapid, toxic onset within hours." },
+          { text: "Mild itchy rash over the abdominal skin", isCorrect: false, rationale: "Epiglottitis affects the supraglottic airway, not the skin." },
+          { text: "Spontaneous painless enlargement of the uvula alone", isCorrect: false, rationale: "The epiglottis and supraglottic tissues are swollen and cherry-red." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "Which classic posture is assumed by a child experiencing severe acute epiglottitis?",
+        options: [
+          { text: "Tripod position (sitting upright, leaning forward with chin out, mouth open, and drooling)", isCorrect: true, rationale: "The tripod posture aligns the pharynx and maximizes airway diameter to maintain air exchange." },
+          { text: "Lying flat supine with head turned completely to the right", isCorrect: false, rationale: "Supine positioning causes the swollen epiglottis to occlude the laryngeal inlet completely." },
+          { text: "Curled in a tight fetal ball on the floor", isCorrect: false, rationale: "Fetal flexion restricts the upper airway." },
+          { text: "Hanging upside down from the edge of the bed", isCorrect: false, rationale: "Children with epiglottitis refuse to lie down and insist on sitting upright." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "Why should a nurse NEVER use a tongue blade or swab to inspect the throat of a child with suspected epiglottitis?",
+        options: [
+          { text: "It may trigger an immediate, fatal laryngospasm and complete airway occlusion", isCorrect: true, rationale: "Any physical stimulation of the cherry-red, swollen epiglottis can cause total reflex spasm of the airway." },
+          { text: "It causes immediate bacterial mutation into viral bronchitis", isCorrect: false, rationale: "Physical examination cannot mutate bacterial organisms into viruses." },
+          { text: "Tongue blades dissolve upon contact with pediatric saliva", isCorrect: false, rationale: "Tongue blades do not dissolve; the danger is life-threatening laryngospasm." },
+          { text: "It prevents the child from receiving intramuscular pain injections", isCorrect: false, rationale: "Airway preservation is the sole reason oral inspection is avoided." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "What is the primary pathogen responsible for Bronchiolitis in infants?",
+        options: [
+          { text: "Respiratory Syncytial Virus (RSV)", isCorrect: true, rationale: "RSV is the causative viral agent in the vast majority of infant bronchiolitis cases." },
+          { text: "Group A beta-hemolytic Streptococcus", isCorrect: false, rationale: "GABHS causes bacterial pharyngitis, tonsillitis, and scarlet fever." },
+          { text: "Candida albicans", isCorrect: false, rationale: "Candida is a fungal organism causing oral thrush and diaper dermatitis." },
+          { text: "Pseudomonas aeruginosa", isCorrect: false, rationale: "RSV is by far the predominant viral pathogen of bronchiolitis." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "How is Respiratory Syncytial Virus (RSV) primarily transmitted in healthcare facilities?",
+        options: [
+          { text: "Direct contact with respiratory secretions and contaminated hands or fomites", isCorrect: true, rationale: "RSV survives for hours on countertops and 30 minutes on hands, spreading via hand-to-eye/nose contact." },
+          { text: "Contaminated central air conditioning cooling towers miles away", isCorrect: false, rationale: "Legionella spreads through water towers, not RSV." },
+          { text: "Direct ingestion of pasteurized cow's milk", isCorrect: false, rationale: "RSV is a respiratory viral pathogen, not a foodborne illness." },
+          { text: "Insect bites from regional mosquitoes", isCorrect: false, rationale: "RSV is not vector-borne." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "What is the most common congenital heart defect in children with Down Syndrome (Trisomy 21)?",
+        options: [
+          { text: "Atrioventricular Canal Defect (Endocardial Cushion Defect)", isCorrect: true, rationale: "AV canal defect, which creates a large central AV valve, has a strong association with Down syndrome." },
+          { text: "Coarctation of the Aorta", isCorrect: false, rationale: "Coarctation is strongly linked to Turner syndrome." },
+          { text: "Complete Dextrocardia with situs inversus", isCorrect: false, rationale: "Dextrocardia is characteristic of Kartagener syndrome." },
+          { text: "Pulmonary atresia with intact ventricular septum", isCorrect: false, rationale: "AV canal is the classic Down syndrome cardiac anomaly." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "Which congenital heart defect presents with bounding upper extremity pulses and weak or absent femoral pulses?",
+        options: [
+          { text: "Coarctation of the Aorta", isCorrect: true, rationale: "Narrowing near the ductus arteriosus produces proximal hypertension in the arms and distal hypotension in the legs." },
+          { text: "Patent Ductus Arteriosus", isCorrect: false, rationale: "PDA presents with bounding pulses in all extremities and a machinery murmur." },
+          { text: "Atrial Septal Defect", isCorrect: false, rationale: "ASD typically presents with mild systolic murmurs and fixed splitting of S2." },
+          { text: "Tricuspid Atresia", isCorrect: false, rationale: "Tricuspid atresia causes severe cyanosis and decreased pulmonary flow." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "Which four anatomical cardiac defects comprise the classic Tetralogy of Fallot?",
+        options: [
+          { text: "VSD, pulmonic stenosis, overriding aorta, and right ventricular hypertrophy", isCorrect: true, rationale: "These four defects define Tetralogy of Fallot, resulting in right-to-left shunting and cyanosis." },
+          { text: "ASD, aortic stenosis, left ventricular hypertrophy, and mitral cleft", isCorrect: false, rationale: "These do not constitute the four classic defects of Fallot." },
+          { text: "PDA, tricuspid atresia, dextrocardia, and pulmonary edema", isCorrect: false, rationale: "These are disparate anomalies." },
+          { text: "Coarctation, endocardial cushion defect, transposition, and myocarditis", isCorrect: false, rationale: "Tetralogy specifically consists of VSD, PS, overriding aorta, and RVH." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "What pharmacologic agent is administered to promote closure of a Patent Ductus Arteriosus (PDA) in preterm infants?",
+        options: [
+          { text: "Indomethacin (prostaglandin inhibitor)", isCorrect: true, rationale: "Prostaglandin E keeps the ductus patent; indomethacin inhibits prostaglandins, prompting ductal closure." },
+          { text: "Prostaglandin E1 continuous infusion", isCorrect: false, rationale: "Prostaglandin E1 maintains ductal patency in ductal-dependent cyanotic lesions." },
+          { text: "Acyclovir antiviral syrup", isCorrect: false, rationale: "Acyclovir is indicated for herpes simplex viral infections." },
+          { text: "Dexamethasone intravenous injection", isCorrect: false, rationale: "Indomethacin or ibuprofen are the standard prostaglandin inhibitors for PDA closure." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "Which heart defect involves the pulmonary artery leaving the left ventricle and the aorta exiting the right ventricle?",
+        options: [
+          { text: "Transposition of the Great Arteries (TGA)", isCorrect: true, rationale: "In TGA, the great vessels are reversed, creating two parallel, independent circulatory loops." },
+          { text: "Ventricular Septal Defect", isCorrect: false, rationale: "VSD is an opening in the ventricular septum." },
+          { text: "Aortic Stenosis", isCorrect: false, rationale: "Aortic stenosis is narrowing of the aortic valve leaflets." },
+          { text: "Truncus Arteriosus", isCorrect: false, rationale: "Truncus arteriosus consists of a single shared arterial trunk overriding both ventricles." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "What is the definitive surgical procedure of choice for Transposition of the Great Arteries in the first weeks of life?",
+        options: [
+          { text: "Arterial Switch Operation (ASO / Jatene procedure)", isCorrect: true, rationale: "The arterial switch transposes the great arteries and transfers coronary arteries to anatomical position." },
+          { text: "Pulmonary artery banding alone", isCorrect: false, rationale: "Pulmonary banding is a palliative step, not the definitive arterial switch." },
+          { text: "Heart transplantation in all cases", isCorrect: false, rationale: "Anatomical arterial repair is successful, avoiding routine initial transplant." },
+          { text: "Transcatheter coil occlusion of the mitral valve", isCorrect: false, rationale: "Occluding the mitral valve would cause fatal inflow obstruction." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "Which organism triggers the autoimmune response that causes Acute Rheumatic Fever (ARF)?",
+        options: [
+          { text: "Group A beta-hemolytic streptococci (following untreated pharyngitis)", isCorrect: true, rationale: "Molecular mimicry following untreated GABHS pharyngitis leads to autoantibodies attacking cardiac valves and joints." },
+          { text: "Rotavirus", isCorrect: false, rationale: "Rotavirus causes acute viral gastroenteritis." },
+          { text: "Candida albicans", isCorrect: false, rationale: "Candida is a fungal organism causing thrush." },
+          { text: "Respiratory Syncytial Virus", isCorrect: false, rationale: "RSV causes viral bronchiolitis." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "According to the revised Jones Criteria, which finding represents a MAJOR manifestation of Acute Rheumatic Fever?",
+        options: [
+          { text: "Carditis, polyarthritis, chorea, erythema marginatum, and subcutaneous nodules", isCorrect: true, rationale: "These five clinical signs represent the classic major criteria for diagnosing ARF." },
+          { text: "Fever, arthralgia, and elevated ESR/CRP", isCorrect: false, rationale: "Fever, arthralgia, and elevated acute-phase reactants are minor criteria." },
+          { text: "Unilateral sensorineural deafness and cataracts", isCorrect: false, rationale: "These are features of congenital rubella syndrome." },
+          { text: "Persistent vomiting and painless bloody stool", isCorrect: false, rationale: "Gastrointestinal bleeding is not a Jones criterion." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "What is the recommended secondary prophylactic regimen to prevent recurrent Acute Rheumatic Fever attacks?",
+        options: [
+          { text: "Intramuscular injections of Benzathine Penicillin G every 28 days", isCorrect: true, rationale: "Monthly intramuscular benzathine penicillin G is the most effective prophylaxis against recurrent streptococcal infection." },
+          { text: "Oral acetaminophen once yearly on the child's birthday", isCorrect: false, rationale: "Acetaminophen provides mild analgesia and has zero antibacterial prophylactic effect." },
+          { text: "Continuous intravenous broad-spectrum vancomycin hospital stay", isCorrect: false, rationale: "Continuous inpatient IV therapy is inappropriate for long-term prophylaxis." },
+          { text: "Daily consumption of raw garlic extract drinks", isCorrect: false, rationale: "Herbal extracts do not provide proven secondary streptococcal prophylaxis." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "What is the nurse's priority action before administering a scheduled dose of oral Digoxin to an infant?",
+        options: [
+          { text: "Auscultate the apical pulse for 1 full minute and withhold if below 90 to 110 beats/min", isCorrect: true, rationale: "Digoxin slows conduction; assessing the apical pulse for a full minute prevents dangerous bradycardia." },
+          { text: "Measure the infant's head circumference with a paper tape", isCorrect: false, rationale: "Head circumference is irrelevant to cardiac glycoside dosing safety." },
+          { text: "Check blood glucose with a heel stick", isCorrect: false, rationale: "Apical pulse and serum potassium are the primary safety checks for digoxin." },
+          { text: "Administer the dose with a large tablespoon of honey", isCorrect: false, rationale: "Honey is contraindicated under 1 year, and exact oral syringes must be used." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "Which electrolyte imbalance enhances the myocardial effect of digoxin and increases the risk of Digoxin Toxicity?",
+        options: [
+          { text: "Hypokalemia (low serum potassium)", isCorrect: true, rationale: "Low potassium allows greater digoxin binding to the Na+/K+ ATPase pump, dramatically increasing toxicity risk." },
+          { text: "Hypercalcemia", isCorrect: false, rationale: "While calcium affects contractility, hypokalemia is the classic precipitant of digoxin toxicity." },
+          { text: "Hypernatremia", isCorrect: false, rationale: "Elevated sodium does not cause the classic digitalis toxicity enhancement seen with hypokalemia." },
+          { text: "Hypomagnesemia alone", isCorrect: false, rationale: "Potassium levels (normal 3.5 to 5.5 mmol/L) are the primary monitoring target for digoxin safety." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "What are the earliest clinical signs of Digoxin Toxicity in pediatric patients?",
+        options: [
+          { text: "Bradycardia, vomiting, and anorexia", isCorrect: true, rationale: "Vomiting, poor feeding, and unexplained bradycardia are the most common early signs of digitalis toxicity." },
+          { text: "Hyperactive reflexes and severe watery diarrhea", isCorrect: false, rationale: "Diarrhea and hyperreflexia do not represent classic digoxin toxicity." },
+          { text: "Rapid weight gain with periorbital edema", isCorrect: false, rationale: "Edema is a sign of worsening heart failure rather than acute digoxin toxicity." },
+          { text: "Sandpaper body rash and high fever", isCorrect: false, rationale: "Rashes and fevers indicate infectious processes." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "What clinical manifestation indicates systemic venous congestion in a child with right-sided heart failure?",
+        options: [
+          { text: "Hepatomegaly, peripheral/periorbital edema, and neck vein distention", isCorrect: true, rationale: "High right atrial and central venous pressure causes blood backing up into systemic veins, liver, and subcutaneous tissues." },
+          { text: "Tachypnea, retractions, and pulmonary crackles", isCorrect: false, rationale: "Pulmonary congestion signs point to left-sided heart failure." },
+          { text: "Sudden painless rash over the lower extensor elbows", isCorrect: false, rationale: "Subcutaneous nodules indicate rheumatic fever, not systemic congestion." },
+          { text: "Dry hacking nighttime nonproductive cough", isCorrect: false, rationale: "Cough reflects pulmonary congestion or tracheobronchitis." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "How should an infant with Congestive Heart Failure (CHF) be fed to conserve energy and reduce fatigue?",
+        options: [
+          { text: "Offer small, frequent feedings on a 3-hour schedule in a semi-upright position", isCorrect: true, rationale: "Semi-upright posture reduces venous return and work of breathing, and small feeds prevent exhausting the infant." },
+          { text: "Force the infant to complete an 8-ounce bottle in under 5 minutes", isCorrect: false, rationale: "Forcing rapid intake causes severe fatigue, distress, and aspiration." },
+          { text: "Withhold all feedings until the infant cries continuously for one hour", isCorrect: false, rationale: "Prolonged crying wastes limited caloric reserves." },
+          { text: "Administer only cold ice water through a wide-bore straw", isCorrect: false, rationale: "Infants require calorie-dense milk, and straws are developmental hazards." }
+        ]
+      },
+      {
+        lecture: 6,
+        question: "What is an important nursing consideration when an infant with heart failure is tachypneic with a respiratory rate of 80 to 100 breaths/min?",
+        options: [
+          { text: "Withhold oral feedings and administer nutrition via a gavage (nasogastric) tube", isCorrect: true, rationale: "Feeding orally while tachypneic (>80 breaths/min) markedly increases the danger of pulmonary aspiration." },
+          { text: "Force the infant to drink through a standard hard plastic bottle nipple", isCorrect: false, rationale: "Oral feeds at respiratory rates over 80 breaths/min carry an unacceptably high aspiration risk." },
+          { text: "Place the infant completely prone with a firm pacifier", isCorrect: false, rationale: "Prone positioning impairs thoracic expansion and increases work of breathing." },
+          { text: "Discontinue all oxygen support immediately", isCorrect: false, rationale: "Oxygen therapy is maintained to support tissue oxygenation." }
+        ]
+      }
+    ];
+
+    // State
+    let currentLecture = "all";
+    let questions = JSON.parse(JSON.stringify(RAW_QUESTIONS));
+    let userAnswers = {}; // { questionIndex: selectedOptionIndex }
+    let searchQuery = "";
+
+    // DOM References
+    const filterTabs = document.getElementById('filter-tabs');
+    const questionsContainer = document.getElementById('questions-container');
+    const scoreDisplay = document.getElementById('score-display');
+    const progressDisplay = document.getElementById('progress-display');
+    const accuracyDisplay = document.getElementById('accuracy-display');
+    const currentLectureTitle = document.getElementById('current-lecture-title');
+    const currentLectureDesc = document.getElementById('current-lecture-desc');
+    const visibleCountBadge = document.getElementById('visible-count-badge');
+    const shuffleBtn = document.getElementById('shuffle-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const searchInput = document.getElementById('search-input');
+
+    // Init navigation tabs
+    function renderTabs() {
+      filterTabs.innerHTML = LECTURES.map(lec => {
+        const isActive = lec.id === currentLecture;
+        return `
+          <button data-lecture="${lec.id}" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 ${
+            isActive 
+              ? 'bg-teal-500 text-slate-950 shadow-md shadow-teal-500/20' 
+              : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+          }">
+            <span>${lec.name}</span>
+            <span class="text-[10px] py-0.2 px-1.5 rounded-full ${isActive ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-900 text-slate-400'} font-bold">
+              ${lec.id === 'all' ? RAW_QUESTIONS.length : RAW_QUESTIONS.filter(q => q.lecture === lec.id).length}
+            </span>
+          </button>
+        `;
+      }).join('');
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const target = e.currentTarget.dataset.lecture;
+          currentLecture = target === "all" ? "all" : parseInt(target);
+          renderTabs();
+          updateHeaderInfo();
+          renderQuestions();
+        });
+      });
+    }
+
+    function updateHeaderInfo() {
+      const activeObj = LECTURES.find(l => l.id === currentLecture);
+      currentLectureTitle.innerHTML = `<i class="fa-solid fa-book-medical text-teal-400"></i> ${activeObj.name}`;
+      
+      const descriptions = {
+        "all": "Comprehensive review covering all 6 exam lectures with real-time feedback and explanations.",
+        1: "Philosophy of Pediatric Care, Family-Centered Care, Atraumatic Care & Cultural Humility.",
+        2: "Child Hospitalization, Stressors, Separation Anxiety & Pediatric Nursing Interventions.",
+        3: "Problems of the Newborn, Soft Tissue & Head Birth Injuries, Cranial Deformities & Dermatologic Issues.",
+        4: "Infant Feeding, Human Milk Benefits, Breastfeeding Care, Bottle Hazards & Solid Weaning.",
+        5: "Problems of High-Risk Neonates, Prematurity, Hypothermia, Hyperbilirubinemia, Phototherapy, Sepsis & NEC.",
+        6: "Pediatric Respiratory Distress Syndrome, Tonsillitis, Otitis Media, Croup, Bronchiolitis & Cardiovascular Defects."
+      };
+      currentLectureDesc.textContent = descriptions[currentLecture] || "Practice and master pediatric nursing topics.";
+    }
+
+    // Render questions
+    function renderQuestions() {
+      const filtered = questions.filter(q => {
+        const matchesLecture = currentLecture === "all" || q.lecture === currentLecture;
+        const matchesSearch = searchQuery === "" || 
+          q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          q.options.some(opt => opt.text.toLowerCase().includes(searchQuery.toLowerCase()));
+        return matchesLecture && matchesSearch;
+      });
+
+      visibleCountBadge.textContent = `Showing ${filtered.length} Questions`;
+
+      if (filtered.length === 0) {
+        questionsContainer.innerHTML = `
+          <div class="bg-slate-950 border border-slate-800 rounded-2xl p-12 text-center">
+            <i class="fa-solid fa-clipboard-question text-4xl text-slate-600 mb-3 block"></i>
+            <h3 class="text-base font-bold text-slate-300">No questions found</h3>
+            <p class="text-xs text-slate-500 mt-1">Try clearing your search query or choosing another lecture category.</p>
+          </div>
+        `;
+        return;
+      }
+
+      questionsContainer.innerHTML = filtered.map((q, idx) => {
+        // Unique global ID based on reference inside questions array
+        const globalIdx = questions.indexOf(q);
+        const answeredIndex = userAnswers[globalIdx];
+        const isAnswered = answeredIndex !== undefined;
+
+        return `
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 transition hover:border-slate-700 relative overflow-hidden" id="card-${globalIdx}">
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="text-[11px] font-bold text-teal-400 uppercase tracking-wider bg-teal-500/10 border border-teal-500/20 px-2.5 py-0.5 rounded-full">
+                Question ${globalIdx + 1} • Lecture ${q.lecture}
+              </span>
+              ${isAnswered ? `
+                <span class="text-xs font-bold flex items-center gap-1 ${q.options[answeredIndex].isCorrect ? 'text-emerald-400' : 'text-rose-400'}">
+                  <i class="fa-solid ${q.options[answeredIndex].isCorrect ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
+                  ${q.options[answeredIndex].isCorrect ? 'Correct' : 'Incorrect'}
+                </span>
+              ` : `
+                <span class="text-xs text-slate-500 font-medium">Select an option</span>
+              `}
+            </div>
+
+            <p class="text-sm font-semibold text-white mb-4 leading-relaxed">${q.question}</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+              ${q.options.map((opt, optIdx) => {
+                let btnStyle = "bg-slate-900 border-slate-800 text-slate-200 hover:bg-slate-850 hover:border-slate-700";
+                let badgeContent = `<span class="h-5 w-5 rounded-md bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400 group-hover:bg-slate-700">${String.fromCharCode(65 + optIdx)}</span>`;
+                
+                if (isAnswered) {
+                  if (opt.isCorrect) {
+                    btnStyle = "bg-emerald-950/60 border-emerald-600/70 text-emerald-200 font-medium pulse-glow";
+                    badgeContent = `<span class="h-5 w-5 rounded-md bg-emerald-600 flex items-center justify-center text-[10px] font-bold text-slate-950"><i class="fa-solid fa-check"></i></span>`;
+                  } else if (answeredIndex === optIdx && !opt.isCorrect) {
+                    btnStyle = "bg-rose-950/60 border-rose-600/70 text-rose-200 font-medium";
+                    badgeContent = `<span class="h-5 w-5 rounded-md bg-rose-600 flex items-center justify-center text-[10px] font-bold text-white"><i class="fa-solid fa-xmark"></i></span>`;
+                  } else {
+                    btnStyle = "bg-slate-950 border-slate-900 text-slate-500 opacity-60";
+                    badgeContent = `<span class="h-5 w-5 rounded-md bg-slate-900 flex items-center justify-center text-[10px] text-slate-600">${String.fromCharCode(65 + optIdx)}</span>`;
+                  }
+                }
+
+                return `
+                  <button 
+                    ${isAnswered ? 'disabled' : ''} 
+                    data-qidx="${globalIdx}" 
+                    data-optidx="${optIdx}" 
+                    class="opt-btn group border rounded-lg p-3 text-left text-xs transition flex items-start gap-2.5 ${btnStyle} ${isAnswered ? 'cursor-default' : 'cursor-pointer active:scale-[0.98]'}"
+                  >
+                    ${badgeContent}
+                    <span class="flex-1 pt-0.5 leading-snug">${opt.text}</span>
+                  </button>
+                `;
+              }).join('')}
+            </div>
+
+            <!-- Instant Answer Explanation Accordion -->
+            ${isAnswered ? `
+              <div class="mt-4 pt-3.5 border-t border-slate-900 bg-slate-900/50 -mx-5 -mb-5 px-5 py-3">
+                <div class="flex items-start gap-2 text-xs">
+                  <i class="fa-solid fa-circle-info text-teal-400 mt-0.5 shrink-0"></i>
+                  <div>
+                    <span class="font-bold text-slate-200">Clinical Explanation:</span>
+                    <p class="text-slate-300 mt-1 leading-relaxed">
+                      ${q.options.find(o => o.isCorrect).rationale}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+
+      // Add option click listeners
+      document.querySelectorAll('.opt-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const qIdx = parseInt(btn.dataset.qidx);
+          const optIdx = parseInt(btn.dataset.optidx);
+          handleAnswerSelect(qIdx, optIdx, e);
+        });
+      });
+
+      updateScoreStats();
+    }
+
+    // Handle user answering an MCQ
+    function handleAnswerSelect(qIdx, optIdx, event) {
+      if (userAnswers[qIdx] !== undefined) return;
+
+      userAnswers[qIdx] = optIdx;
+      const isCorrect = questions[qIdx].options[optIdx].isCorrect;
+
+      // Spawn visual fireworks or sparkles on click
+      const rect = event.currentTarget.getBoundingClientRect();
+      const clickX = rect.left + rect.width / 2;
+      const clickY = rect.top + rect.height / 2;
+      spawnBurst(clickX, clickY, isCorrect);
+
+      if (!isCorrect) {
+        const card = document.getElementById(`card-${qIdx}`);
+        if (card) {
+          card.classList.add('shake');
+          setTimeout(() => card.classList.remove('shake'), 500);
+        }
+      }
+
+      renderQuestions();
+    }
+
+    // Calculate score metrics
+    function updateScoreStats() {
+      const answeredKeys = Object.keys(userAnswers);
+      const totalAnswered = answeredKeys.length;
+      let correctCount = 0;
+
+      answeredKeys.forEach(k => {
+        const qIdx = parseInt(k);
+        const optIdx = userAnswers[qIdx];
+        if (questions[qIdx] && questions[qIdx].options[optIdx] && questions[qIdx].options[optIdx].isCorrect) {
+          correctCount++;
+        }
+      });
+
+      scoreDisplay.textContent = correctCount;
+      progressDisplay.textContent = `${totalAnswered}/${questions.length}`;
+      const accuracy = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
+      accuracyDisplay.textContent = `${accuracy}%`;
+    }
+
+    // Fisher-Yates array shuffle
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // Shuffle functionality
+    shuffleBtn.addEventListener('click', (e) => {
+      // Shuffle question order and answer options
+      questions = shuffleArray(JSON.parse(JSON.stringify(RAW_QUESTIONS)));
+      questions.forEach(q => {
+        q.options = shuffleArray(q.options);
+      });
+      userAnswers = {};
+
+      const rect = shuffleBtn.getBoundingClientRect();
+      spawnBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, true);
+
+      renderQuestions();
+    });
+
+    // Reset functionality
+    resetBtn.addEventListener('click', () => {
+      if (confirm("Reset current quiz progress?")) {
+        userAnswers = {};
+        renderQuestions();
+      }
+    });
+
+    // Search query listener
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      renderQuestions();
+    });
+
+    // Initial setup
+    renderTabs();
+    updateHeaderInfo();
+    renderQuestions();
+  </script>
+</body>
+</html>
+```eof
+
+### What This Application Includes:
+1. **Curriculum Coverage**:
+   - **Lecture 1**: Philosophy of Care (Family-Centered Care, Atraumatic Care, Cultural Humility, Nursing roles).
+   - **Lecture 2**: Child Hospitalization (Separation anxiety by age groups, loss of control, sibling/parental stress, preparation).
+   - **Lecture 3**: Problems of the Newborn (Soft tissue injuries, Cephalhematoma vs. Caput succedaneum, Subgaleal hemorrhage, Craniostenosis, Microcephaly, Oral thrush, Herpes, Mongolian spots).
+   - **Lecture 4**: Infant Feeding & Weaning (AAP guidelines, Human milk immunoglobulins, contraindications, latch technique, weaning protocols & hazards).
+   - **Lecture 5**: High-Risk Neonates (Gestational classifications, preterm characteristics, hypothermia, hyperbilirubinemia, phototherapy, neonatal sepsis, and Necrotizing Enterocolitis).
+   - **Lecture 6**: Respiratory & Cardiovascular Dysfunctions (RDS, Tonsillitis & tonsillectomy precautions, Otitis Media, Acute Epiglottitis, Bronchiolitis, Congenital heart defects [ASD, VSD, AV Canal, PDA, Coarctation, Fallot, TGA], Acute Rheumatic Fever, and Digoxin administration for CHF).
+2. **Interactive Gamification & Effects**:
+   - HTML5 Canvas particle burst engine simulating sparkling fireworks on clicks.
+   - Haptic-style card shake animation on wrong answers.
+   - Immediate answer reveal with detailed clinical rationales.
+   - Instant shuffling of both questions and options.
+   - Real-time score, progress counter, and accuracy percentage dashboard.
